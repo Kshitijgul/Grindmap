@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [subjectGoals, setSubjectGoals] = useState({});
   const [focusSessions, setFocusSessions] = useState({});
   const [loading, setLoading] = useState(true);
+  const [initialLoadDone, setInitialLoadDone] = useState(false); // ← KEY FIX
 
   // Load user data from Supabase
   useEffect(() => {
@@ -32,99 +33,100 @@ export default function Dashboard() {
     }
   }, [user]);
 
-async function loadUserData() {
-  try {
-    setLoading(true);
+  async function loadUserData() {
+    // ← KEY FIX: never reload if already loaded once
+    if (initialLoadDone) return;
 
-    // ── Range: 1 month back → 2 months ahead ──
-    const rangeStart = new Date();
-    rangeStart.setMonth(rangeStart.getMonth() - 1);
-    rangeStart.setDate(1);
+    try {
+      setLoading(true);
 
-    const rangeEnd = new Date();
-    rangeEnd.setMonth(rangeEnd.getMonth() + 2);
-    rangeEnd.setDate(1);
+      const rangeStart = new Date();
+      rangeStart.setMonth(rangeStart.getMonth() - 1);
+      rangeStart.setDate(1);
 
-    const rangeStartStr = rangeStart.toISOString().split('T')[0];
-    const rangeEndStr = rangeEnd.toISOString().split('T')[0];
+      const rangeEnd = new Date();
+      rangeEnd.setMonth(rangeEnd.getMonth() + 2);
+      rangeEnd.setDate(1);
 
-    // ── 1. Load subjects ──
-    const { data: subjectsData, error: subjectsError } = await supabase
-      .from('subjects')
-      .select('*')
-      .eq('user_id', user.id);
+      const rangeStartStr = rangeStart.toISOString().split("T")[0];
+      const rangeEndStr = rangeEnd.toISOString().split("T")[0];
 
-    if (subjectsError) throw subjectsError;
-    setSubjects(subjectsData || []);
+      // 1. Load subjects
+      const { data: subjectsData, error: subjectsError } = await supabase
+        .from("subjects")
+        .select("*")
+        .eq("user_id", user.id);
 
-    // ── 2. Load tasks (±2 months, not per selected date) ──
-    const { data: tasksData, error: tasksError } = await supabase
-      .from('tasks')
-      .select('*')
-      .eq('user_id', user.id)
-      .gte('date', rangeStartStr)
-      .lt('date', rangeEndStr);
+      if (subjectsError) throw subjectsError;
+      setSubjects(subjectsData || []);
 
-    if (tasksError) throw tasksError;
+      // 2. Load tasks
+      const { data: tasksData, error: tasksError } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("date", rangeStartStr)
+        .lt("date", rangeEndStr);
 
-    const tasksByDate = {};
-    (tasksData || []).forEach(task => {
-      if (!tasksByDate[task.date]) tasksByDate[task.date] = [];
-      tasksByDate[task.date].push(task);
-    });
-    setTasks(tasksByDate);
+      if (tasksError) throw tasksError;
 
-    // ── 3. Load subject goals ──
-    const { data: goalsData, error: goalsError } = await supabase
-      .from('subject_goals')
-      .select('*')
-      .eq('user_id', user.id);
+      const tasksByDate = {};
+      (tasksData || []).forEach((task) => {
+        if (!tasksByDate[task.date]) tasksByDate[task.date] = [];
+        tasksByDate[task.date].push(task);
+      });
+      setTasks(tasksByDate);
 
-    if (goalsError) throw goalsError;
+      // 3. Load subject goals
+      const { data: goalsData, error: goalsError } = await supabase
+        .from("subject_goals")
+        .select("*")
+        .eq("user_id", user.id);
 
-    const goalsBySubject = {};
-    (goalsData || []).forEach(goal => {
-      goalsBySubject[goal.subject_id] = goal;
-    });
-    setSubjectGoals(goalsBySubject);
+      if (goalsError) throw goalsError;
 
-    // ── 4. Load focus sessions (±2 months, not per selected date) ──
-    const { data: sessionsData, error: sessionsError } = await supabase
-      .from('focus_sessions')
-      .select('*')
-      .eq('user_id', user.id)
-      .gte('date', rangeStartStr)
-      .lt('date', rangeEndStr);
+      const goalsBySubject = {};
+      (goalsData || []).forEach((goal) => {
+        goalsBySubject[goal.subject_id] = goal;
+      });
+      setSubjectGoals(goalsBySubject);
 
-    if (sessionsError) throw sessionsError;
+      // 4. Load focus sessions
+      const { data: sessionsData, error: sessionsError } = await supabase
+        .from("focus_sessions")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("date", rangeStartStr)
+        .lt("date", rangeEndStr);
 
-    const sessionsByDate = {};
-    (sessionsData || []).forEach(session => {
-      if (!sessionsByDate[session.date]) sessionsByDate[session.date] = [];
-      sessionsByDate[session.date].push(session);
-    });
-    setFocusSessions(sessionsByDate);
+      if (sessionsError) throw sessionsError;
 
-  } catch (error) {
-    console.error('Error loading data:', error);
-  } finally {
-    setLoading(false);
+      const sessionsByDate = {};
+      (sessionsData || []).forEach((session) => {
+        if (!sessionsByDate[session.date]) sessionsByDate[session.date] = [];
+        sessionsByDate[session.date].push(session);
+      });
+      setFocusSessions(sessionsByDate);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    } finally {
+      setLoading(false);
+      setInitialLoadDone(true); // ← KEY FIX: mark as loaded
+    }
   }
-}
 
   async function handleSignOut() {
     await signOut();
     navigate("/");
   }
 
-  // Subject management
+  // ── Subject management ──
   async function addSubject(name, color) {
     const { data, error } = await supabase
       .from("subjects")
       .insert([{ user_id: user.id, name, color }])
       .select()
       .single();
-
     if (error) throw error;
     setSubjects([...subjects, data]);
   }
@@ -135,7 +137,6 @@ async function loadUserData() {
       .update(updates)
       .eq("id", id)
       .eq("user_id", user.id);
-
     if (error) throw error;
     setSubjects(subjects.map((s) => (s.id === id ? { ...s, ...updates } : s)));
   }
@@ -146,12 +147,11 @@ async function loadUserData() {
       .delete()
       .eq("id", id)
       .eq("user_id", user.id);
-
     if (error) throw error;
     setSubjects(subjects.filter((s) => s.id !== id));
   }
 
-  // Task management
+  // ── Task management ──
   async function addTask(date, subjectId, topic, goal = 1) {
     const { data, error } = await supabase
       .from("tasks")
@@ -167,9 +167,7 @@ async function loadUserData() {
       ])
       .select()
       .single();
-
     if (error) throw error;
-
     setTasks((prev) => ({
       ...prev,
       [date]: [...(prev[date] || []), data],
@@ -179,15 +177,12 @@ async function loadUserData() {
   async function toggleTask(taskId, date) {
     const task = tasks[date]?.find((t) => t.id === taskId);
     if (!task) return;
-
     const { error } = await supabase
       .from("tasks")
       .update({ completed: !task.completed })
       .eq("id", taskId)
       .eq("user_id", user.id);
-
     if (error) throw error;
-
     setTasks((prev) => ({
       ...prev,
       [date]: prev[date].map((t) =>
@@ -202,9 +197,7 @@ async function loadUserData() {
       .update(updates)
       .eq("id", taskId)
       .eq("user_id", user.id);
-
     if (error) throw error;
-
     setTasks((prev) => ({
       ...prev,
       [date]: prev[date].map((t) =>
@@ -219,28 +212,23 @@ async function loadUserData() {
       .delete()
       .eq("id", taskId)
       .eq("user_id", user.id);
-
     if (error) throw error;
-
     setTasks((prev) => ({
       ...prev,
       [date]: prev[date].filter((t) => t.id !== taskId),
     }));
   }
 
-  // Subject goals
+  // ── Subject goals ──
   async function updateSubjectGoal(subjectId, goal, startDate, endDate) {
     const existing = subjectGoals[subjectId];
-
     if (existing) {
       const { error } = await supabase
         .from("subject_goals")
         .update({ goal, start_date: startDate, end_date: endDate })
         .eq("id", existing.id)
         .eq("user_id", user.id);
-
       if (error) throw error;
-
       setSubjectGoals((prev) => ({
         ...prev,
         [subjectId]: {
@@ -264,17 +252,12 @@ async function loadUserData() {
         ])
         .select()
         .single();
-
       if (error) throw error;
-
-      setSubjectGoals((prev) => ({
-        ...prev,
-        [subjectId]: data,
-      }));
+      setSubjectGoals((prev) => ({ ...prev, [subjectId]: data }));
     }
   }
 
-  // Focus sessions
+  // ── Focus sessions ──
   async function logFocusSession(
     date,
     taskId,
@@ -298,43 +281,31 @@ async function loadUserData() {
       ])
       .select()
       .single();
-
     if (error) throw error;
-
     setFocusSessions((prev) => ({
       ...prev,
       [date]: [...(prev[date] || []), data],
     }));
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-lime-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading your grind...</p>
-        </div>
-      </div>
-    );
-  }
+  // ── Helper functions ──
   function getWeekDates(dateStr) {
     const date = new Date(dateStr + "T00:00:00");
-    const day = date.getDay(); // 0=Sun
+    const day = date.getDay();
     const monday = new Date(date);
-    monday.setDate(date.getDate() - ((day + 6) % 7)); // shift to Monday
-
+    monday.setDate(date.getDate() - ((day + 6) % 7));
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(monday);
       d.setDate(monday.getDate() + i);
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     });
   }
+
   function getMonthDailyData(dateStr, tasks) {
     const date = new Date(dateStr + "T00:00:00");
     const year = date.getFullYear();
     const month = date.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-
     return Array.from({ length: daysInMonth }, (_, i) => {
       const day = i + 1;
       const d = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -345,12 +316,12 @@ async function loadUserData() {
       return { date: d, day, total, completed, percentage };
     });
   }
+
   function getMonthStats(dateStr, tasks) {
     const date = new Date(dateStr + "T00:00:00");
     const year = date.getFullYear();
     const month = date.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-
     let total = 0,
       completed = 0;
     for (let day = 1; day <= daysInMonth; day++) {
@@ -381,12 +352,10 @@ async function loadUserData() {
     const year = date.getFullYear();
     const month = date.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-
     const stats = {};
     subjects.forEach((s) => {
       stats[s.name] = { total: 0, completed: 0 };
     });
-
     for (let day = 1; day <= daysInMonth; day++) {
       const d = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
       (tasks[d] || []).forEach((task) => {
@@ -411,11 +380,22 @@ async function loadUserData() {
       const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       const dayTasks = tasks[dateStr] || [];
       if (dayTasks.length === 0) break;
-      const allDone = dayTasks.every((t) => t.completed);
-      if (!allDone) break;
+      if (!dayTasks.every((t) => t.completed)) break;
       streak++;
     }
     return streak;
+  }
+
+  // ── Only show loading screen on very first load ──
+  if (loading && !initialLoadDone) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-lime-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading your grind...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -451,7 +431,6 @@ async function loadUserData() {
             </span>
           </div>
         </div>
-
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-400 hidden sm:block">
             {user?.email}
@@ -481,9 +460,7 @@ async function loadUserData() {
         />
 
         {/* Main Content */}
-        <main
-          className={`flex-1 lg:pl-72 min-h-screen transition-all duration-300 ${sidebarOpen ? "lg:ml-0" : ""}`}
-        >
+        <main className="flex-1 lg:pl-72 min-h-screen">
           <div className="p-4 lg:p-6 space-y-6">
             {/* Subject Timeline */}
             <SubjectTimeline
@@ -503,24 +480,20 @@ async function loadUserData() {
                     daysPassed: 0,
                     daysRemaining: 0,
                   };
-
                 const start = new Date(startDate + "T00:00:00");
                 const end = new Date(endDate + "T00:00:00");
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-
                 let total = 0,
                   completed = 0,
                   daysCompleted = 0,
                   daysPassed = 0;
                 const cursor = new Date(start);
-
                 while (cursor <= end) {
                   const d = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
                   const dayTasks = (tasks[d] || []).filter(
                     (t) => t.subject_id === subjectId,
                   );
-
                   if (cursor <= today) {
                     daysPassed++;
                     if (
@@ -529,19 +502,16 @@ async function loadUserData() {
                     )
                       daysCompleted++;
                   }
-
                   total += dayTasks.length;
                   completed += dayTasks.filter((t) => t.completed).length;
                   cursor.setDate(cursor.getDate() + 1);
                 }
-
                 const daysRemaining = Math.max(
                   0,
                   Math.ceil((end - today) / (1000 * 60 * 60 * 24)),
                 );
                 const percentage =
                   total > 0 ? Math.round((completed / total) * 100) : 0;
-
                 return {
                   total,
                   completed,
@@ -557,11 +527,10 @@ async function loadUserData() {
             />
 
             {/* Weekly View */}
-            {/* Weekly View */}
             <WeeklyView
-              weekDates={getWeekDates(selectedDate)} // ← add this
+              weekDates={getWeekDates(selectedDate)}
               selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate} // ← renamed from onSelectDate
+              setSelectedDate={setSelectedDate}
               getDayTasks={(date) => tasks[date] || []}
               getDayStats={(date) => {
                 const dayTasks = tasks[date] || [];
@@ -574,7 +543,6 @@ async function loadUserData() {
               subjects={subjects}
             />
 
-            {/* Weekly Progress Chart */}
             {/* Weekly Progress Chart */}
             <WeeklyProgressLineChart
               weekDates={getWeekDates(selectedDate)}
@@ -598,6 +566,7 @@ async function loadUserData() {
                 done: t.completed,
                 subject:
                   subjects.find((s) => s.id === t.subject_id)?.name || "",
+                subject_id: t.subject_id, // ← already there via ...t spread, so you're fine
               }))}
               subjects={subjects}
               addTask={(date, subject, topic) => {
@@ -623,14 +592,12 @@ async function loadUserData() {
             />
 
             {/* Monthly Progress Chart */}
-            {/* Monthly Progress Chart */}
             <MonthlyProgressLineChart
               dailyData={getMonthDailyData(selectedDate, tasks)}
               selectedDate={selectedDate}
               setSelectedDate={setSelectedDate}
             />
 
-            {/* Monthly Bar Chart */}
             {/* Monthly Bar Chart */}
             <MonthlyChart
               dailyData={getMonthDailyData(selectedDate, tasks)}

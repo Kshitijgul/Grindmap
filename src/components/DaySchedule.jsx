@@ -298,7 +298,7 @@ export default function DaySchedule({ date, tasks, subjects, addTask, toggleTask
               {/* Actions */}
               <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity flex-shrink-0">
                 <button
-                  onClick={() => setFocusTimerTask(task)}
+                 onClick={() => setFocusTimerTask(task)} // task already has subject_id from DB
                   className="text-gray-500 hover:text-indigo-400 text-xs p-1.5 rounded hover:bg-gray-800 transition flex items-center gap-1"
                   title="Start Focus Session"
                 >

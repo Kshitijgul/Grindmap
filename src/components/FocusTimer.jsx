@@ -1,142 +1,216 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 
-function FocusTimer({ task, date, updateTaskFocusSession, incrementTaskFocusSession, logFocusSession, onClose }) {
-  const [mode, setMode] = useState('focus'); // 'focus' or 'break'
+function FocusTimer({
+  task,
+  date,
+  updateTaskFocusSession,
+  incrementTaskFocusSession,
+  logFocusSession,
+  onClose,
+}) {
+  const [mode, setMode] = useState("focus");
   const [isRunning, setIsRunning] = useState(false);
-  const [sessionsCompleted, setSessionsCompleted] = useState(task.sessionsCompleted || 0);
-  
-  // Store times in MINUTES for user input, convert to SECONDS for timer
+  const [sessionsCompleted, setSessionsCompleted] = useState(
+    task.sessionsCompleted || 0,
+  );
   const [focusTimeMin, setFocusTimeMin] = useState(task.focusTime || 25);
   const [breakTimeMin, setBreakTimeMin] = useState(task.breakTime || 5);
-  const [sessionsNeeded, setSessionsNeeded] = useState(task.sessionsNeeded || 1);
+  const [sessionsNeeded, setSessionsNeeded] = useState(
+    task.sessionsNeeded || 1,
+  );
   const [showSettings, setShowSettings] = useState(false);
-  
-  // Fullscreen mode
   const [isFullscreen, setIsFullscreen] = useState(false);
-  
-  // Internal timer state - always in SECONDS
   const [timeLeft, setTimeLeft] = useState((task.focusTime || 25) * 60);
-  
-  // Track session start time for logging
   const [sessionStartTime, setSessionStartTime] = useState(null);
   const [currentSessionId, setCurrentSessionId] = useState(null);
 
+  // ── useRef for interval — survives re-renders and tab switches ──
+  const intervalRef = useRef(null);
+  const timeLeftRef = useRef(timeLeft);
+  const modeRef = useRef(mode);
+  const isRunningRef = useRef(false);
+  const focusTimeMinRef = useRef(focusTimeMin);
+  const breakTimeMinRef = useRef(breakTimeMin);
+  const sessionStartTimeRef = useRef(null);
+  const currentSessionIdRef = useRef(null);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    timeLeftRef.current = timeLeft;
+  }, [timeLeft]);
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+  useEffect(() => {
+    focusTimeMinRef.current = focusTimeMin;
+  }, [focusTimeMin]);
+  useEffect(() => {
+    breakTimeMinRef.current = breakTimeMin;
+  }, [breakTimeMin]);
+  useEffect(() => {
+    sessionStartTimeRef.current = sessionStartTime;
+  }, [sessionStartTime]);
+  useEffect(() => {
+    currentSessionIdRef.current = currentSessionId;
+  }, [currentSessionId]);
+
   // Request notification permission
   useEffect(() => {
-    if ('Notification' in window && Notification.permission !== 'granted') {
+    if ("Notification" in window && Notification.permission !== "granted") {
       Notification.requestPermission();
     }
   }, []);
 
-  // Handle fullscreen mode
+  // Fullscreen handler
   useEffect(() => {
     if (isFullscreen) {
       document.documentElement.requestFullscreen?.();
     } else {
-      if (document.fullscreenElement) {
-        document.exitFullscreen?.();
-      }
+      if (document.fullscreenElement) document.exitFullscreen?.();
     }
-    
     const handleFullscreenChange = () => {
-      if (!document.fullscreenElement) {
-        setIsFullscreen(false);
-      }
+      if (!document.fullscreenElement) setIsFullscreen(false);
     };
-    
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, [isFullscreen]);
 
-  // Timer logic - runs every second
-  useEffect(() => {
-    let interval = null;
-    if (isRunning && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0) {
-      // Timer completed
+  // ── Core tick function using refs — never stale ──
+  const tick = useRef(() => {
+    if (!isRunningRef.current) return;
+
+    const newTime = timeLeftRef.current - 1;
+    timeLeftRef.current = newTime;
+    setTimeLeft(newTime);
+
+    if (newTime <= 0) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      isRunningRef.current = false;
+      setIsRunning(false);
+
       const sessionEndTime = new Date().toISOString();
-      
-      if (mode === 'focus') {
-        // Focus session done - log it
-        if (sessionStartTime && currentSessionId) {
+
+      if (modeRef.current === "focus") {
+        if (sessionStartTimeRef.current && currentSessionIdRef.current) {
+          // Look up subject id from task
           logFocusSession(
-            currentSessionId,
-            task.topic,
-            task.subject,
-            sessionStartTime,
+            date,
+            task.id,
+            task.subject_id,
+            focusTimeMinRef.current,
+            sessionStartTimeRef.current,
             sessionEndTime,
-            focusTimeMin
           );
         }
-        
         incrementTaskFocusSession(date, task.id);
         setSessionsCompleted((prev) => prev + 1);
-        
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('Focus Session Complete!', { body: 'Time for a break!' });
+
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("Focus Session Complete!", {
+            body: "Time for a break!",
+          });
         }
-        setMode('break');
-        setTimeLeft(breakTimeMin * 60);
+
+        modeRef.current = "break";
+        setMode("break");
+        const breakSecs = breakTimeMinRef.current * 60;
+        timeLeftRef.current = breakSecs;
+        setTimeLeft(breakSecs);
+        sessionStartTimeRef.current = null;
+        currentSessionIdRef.current = null;
         setSessionStartTime(null);
         setCurrentSessionId(null);
       } else {
-        // Break done
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('Break Over!', { body: 'Ready for next focus session?' });
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("Break Over!", {
+            body: "Ready for next focus session?",
+          });
         }
-        setMode('focus');
-        setTimeLeft(focusTimeMin * 60);
+        modeRef.current = "focus";
+        setMode("focus");
+        const focusSecs = focusTimeMinRef.current * 60;
+        timeLeftRef.current = focusSecs;
+        setTimeLeft(focusSecs);
       }
-      setIsRunning(false);
     }
-    return () => clearInterval(interval);
-  }, [isRunning, timeLeft, mode, focusTimeMin, breakTimeMin, date, task.id, incrementTaskFocusSession, logFocusSession, sessionStartTime, currentSessionId, task.topic, task.subject]);
+  });
+
+  const startInterval = () => {
+    if (intervalRef.current) return;
+    isRunningRef.current = true;
+    intervalRef.current = setInterval(() => tick.current(), 1000);
+  };
+
+  const stopInterval = () => {
+    clearInterval(intervalRef.current);
+    intervalRef.current = null;
+    isRunningRef.current = false;
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => stopInterval();
+  }, []);
 
   const handleStart = () => {
-    if (mode === 'focus' && !sessionStartTime) {
-      setSessionStartTime(new Date().toISOString());
-      setCurrentSessionId(Date.now().toString());
+    if (mode === "focus" && !sessionStartTime) {
+      const startTime = new Date().toISOString();
+      const sessionId = Date.now().toString();
+      setSessionStartTime(startTime);
+      setCurrentSessionId(sessionId);
+      sessionStartTimeRef.current = startTime;
+      currentSessionIdRef.current = sessionId;
     }
     setIsRunning(true);
+    startInterval();
   };
-  
-  const handlePause = () => setIsRunning(false);
-  
-  const handleReset = () => {
+
+  const handlePause = () => {
     setIsRunning(false);
-    setTimeLeft(mode === 'focus' ? focusTimeMin * 60 : breakTimeMin * 60);
+    stopInterval();
+  };
+
+  const handleReset = () => {
+    stopInterval();
+    setIsRunning(false);
+    const resetTime = mode === "focus" ? focusTimeMin * 60 : breakTimeMin * 60;
+    setTimeLeft(resetTime);
+    timeLeftRef.current = resetTime;
     setSessionStartTime(null);
     setCurrentSessionId(null);
+    sessionStartTimeRef.current = null;
+    currentSessionIdRef.current = null;
   };
 
   const handleSaveSettings = () => {
-    updateTaskFocusSession(date, task.id, focusTimeMin, breakTimeMin, sessionsNeeded);
-    setTimeLeft(mode === 'focus' ? focusTimeMin * 60 : breakTimeMin * 60);
+    updateTaskFocusSession(
+      date,
+      task.id,
+      focusTimeMin,
+      breakTimeMin,
+      sessionsNeeded,
+    );
+    const resetTime = mode === "focus" ? focusTimeMin * 60 : breakTimeMin * 60;
+    setTimeLeft(resetTime);
+    timeLeftRef.current = resetTime;
+    focusTimeMinRef.current = focusTimeMin;
+    breakTimeMinRef.current = breakTimeMin;
     setShowSettings(false);
   };
 
-  // Format seconds to MM:SS
   const formatTime = (totalSeconds) => {
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   };
 
-  // Calculate progress percentage
-  const totalTimeForMode = mode === 'focus' ? focusTimeMin * 60 : breakTimeMin * 60;
+  const totalTimeForMode =
+    mode === "focus" ? focusTimeMin * 60 : breakTimeMin * 60;
   const progress = ((totalTimeForMode - timeLeft) / totalTimeForMode) * 100;
 
-  // Digital clock style formatter for fullscreen
-  const formatDigitalTime = (totalSeconds) => {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  };
-
-  // Fullscreen mode render
+  // Fullscreen render
   if (isFullscreen) {
     return (
       <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50">
@@ -144,30 +218,27 @@ function FocusTimer({ task, date, updateTaskFocusSession, incrementTaskFocusSess
           onClick={() => setIsFullscreen(false)}
           className="absolute top-6 right-6 text-white/50 hover:text-white text-3xl"
         >
-          
+          ✕
         </button>
-        
         <div className="text-center">
           <div className="mb-8">
-            <span className={`text-lg font-medium ${mode === 'focus' ? 'text-indigo-400' : 'text-green-400'}`}>
-              {mode === 'focus' ? ' FOCUS MODE' : '☕ BREAK TIME'}
+            <span
+              className={`text-lg font-medium ${mode === "focus" ? "text-indigo-400" : "text-green-400"}`}
+            >
+              {mode === "focus" ? "🎯 FOCUS MODE" : "☕ BREAK TIME"}
             </span>
           </div>
-          
-          {/* Digital clock display */}
           <div className="font-mono text-[180px] leading-none text-white font-bold tracking-wider">
-            {formatDigitalTime(timeLeft)}
+            {formatTime(timeLeft)}
           </div>
-          
-          <div className="mt-8 text-white/60 text-xl">
-            {task.topic}
-          </div>
-          
+          <div className="mt-8 text-white/60 text-xl">{task.topic}</div>
           <div className="mt-4 flex items-center justify-center gap-2 text-white/40 text-lg">
-            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: task.subjectColor || '#6366f1' }} />
+            <span
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: task.subjectColor || "#6366f1" }}
+            />
             <span>{task.subject}</span>
           </div>
-          
           <div className="mt-12 flex items-center justify-center gap-4">
             {!isRunning ? (
               <button
@@ -191,7 +262,6 @@ function FocusTimer({ task, date, updateTaskFocusSession, incrementTaskFocusSess
               ↻ Reset
             </button>
           </div>
-          
           <div className="mt-8 text-white/40 text-sm">
             Press ESC or click ✕ to exit fullscreen
           </div>
@@ -200,13 +270,14 @@ function FocusTimer({ task, date, updateTaskFocusSession, incrementTaskFocusSess
     );
   }
 
-  // Normal modal mode render
+  // Normal modal render
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-auto">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold text-gray-800">🎯 Focus Session</h3>
+          <h3 className="text-xl font-semibold text-gray-800">
+            🎯 Focus Session
+          </h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-2xl"
@@ -215,54 +286,51 @@ function FocusTimer({ task, date, updateTaskFocusSession, incrementTaskFocusSess
           </button>
         </div>
 
-        {/* Task Info */}
         <div className="mb-4 p-3 bg-gray-50 rounded-lg">
           <div className="flex items-center gap-2 mb-1">
             <span
               className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: task.subjectColor || '#6366f1' }}
+              style={{ backgroundColor: task.subjectColor || "#6366f1" }}
             />
-            <span className="text-xs font-medium text-gray-600">{task.subject}</span>
+            <span className="text-xs font-medium text-gray-600">
+              {task.subject}
+            </span>
           </div>
           <p className="text-gray-800 font-medium text-sm">{task.topic}</p>
         </div>
 
-        {/* Timer Display */}
         <div className="mb-4">
           <div className="flex items-center justify-center gap-2 mb-3">
             <button
               onClick={() => {
-                setMode('focus');
-                setTimeLeft(focusTimeMin * 60);
+                stopInterval();
+                setMode("focus");
+                const t = focusTimeMin * 60;
+                setTimeLeft(t);
+                timeLeftRef.current = t;
                 setIsRunning(false);
                 setSessionStartTime(null);
                 setCurrentSessionId(null);
               }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                mode === 'focus'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${mode === "focus" ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
             >
               🎯 Focus
             </button>
             <button
               onClick={() => {
-                setMode('break');
-                setTimeLeft(breakTimeMin * 60);
+                stopInterval();
+                setMode("break");
+                const t = breakTimeMin * 60;
+                setTimeLeft(t);
+                timeLeftRef.current = t;
                 setIsRunning(false);
               }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                mode === 'break'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${mode === "break" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
             >
               ☕ Break
             </button>
           </div>
 
-          {/* Timer Circle */}
           <div className="relative w-40 h-40 mx-auto mb-3">
             <svg className="w-full h-full transform -rotate-90">
               <circle
@@ -277,7 +345,7 @@ function FocusTimer({ task, date, updateTaskFocusSession, incrementTaskFocusSess
                 cx="80"
                 cy="80"
                 r="72"
-                stroke={mode === 'focus' ? '#6366f1' : '#22c55e'}
+                stroke={mode === "focus" ? "#6366f1" : "#22c55e"}
                 strokeWidth="10"
                 fill="none"
                 strokeDasharray={2 * Math.PI * 72}
@@ -291,12 +359,11 @@ function FocusTimer({ task, date, updateTaskFocusSession, incrementTaskFocusSess
                 {formatTime(timeLeft)}
               </span>
               <span className="text-xs text-gray-500 mt-0.5">
-                {mode === 'focus' ? 'Focus Time' : 'Break Time'}
+                {mode === "focus" ? "Focus Time" : "Break Time"}
               </span>
             </div>
           </div>
 
-          {/* Controls */}
           <div className="flex items-center justify-center gap-2">
             {!isRunning ? (
               <button
@@ -317,41 +384,41 @@ function FocusTimer({ task, date, updateTaskFocusSession, incrementTaskFocusSess
               onClick={handleReset}
               className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors text-sm"
             >
-               Reset
+              ↻ Reset
             </button>
             <button
               onClick={() => setIsFullscreen(true)}
               className="px-4 py-2.5 bg-gray-800 text-white rounded-xl font-medium hover:bg-gray-900 transition-colors text-sm"
-              title="Fullscreen Focus Mode"
             >
               ⛶ Fullscreen
             </button>
           </div>
         </div>
 
-        {/* Session Progress */}
         <div className="mb-4">
           <div className="flex items-center justify-between text-xs text-gray-600 mb-1.5">
             <span>Sessions Completed</span>
-            <span className="font-medium">{sessionsCompleted} / {sessionsNeeded}</span>
+            <span className="font-medium">
+              {sessionsCompleted} / {sessionsNeeded}
+            </span>
           </div>
           <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-indigo-500 rounded-full transition-all duration-300"
-              style={{ width: `${Math.min((sessionsCompleted / sessionsNeeded) * 100, 100)}%` }}
+              style={{
+                width: `${Math.min((sessionsCompleted / sessionsNeeded) * 100, 100)}%`,
+              }}
             />
           </div>
         </div>
 
-        {/* Settings Button */}
         <button
           onClick={() => setShowSettings(!showSettings)}
           className="w-full py-1.5 text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1"
         >
-          ⚙️ {showSettings ? 'Hide' : 'Configure'} Session Settings
+          ⚙️ {showSettings ? "Hide" : "Configure"} Session Settings
         </button>
 
-        {/* Settings Panel */}
         {showSettings && (
           <div className="mt-3 p-3 bg-gray-50 rounded-lg space-y-3">
             <div className="grid grid-cols-2 gap-3">
