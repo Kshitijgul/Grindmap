@@ -20,11 +20,11 @@ function saveToStorage(key, data) {
 }
 
 const DEFAULT_SUBJECTS = [
-  { id: 's1', name: 'Linear Algebra', color: '#6366f1' },
-  { id: 's2', name: 'Digital Logic', color: '#ec4899' },
-  { id: 's3', name: 'Data Structures', color: '#f59e0b' },
-  { id: 's4', name: 'Operating Systems', color: '#10b981' },
-  { id: 's5', name: 'Computer Networks', color: '#3b82f6' },
+  { id: 's1', name: 'Linear Algebra', color: '#6366f1', goal: 'Complete all chapters', startDate: null, endDate: null },
+  { id: 's2', name: 'Digital Logic', color: '#ec4899', goal: 'Finish course', startDate: null, endDate: null },
+  { id: 's3', name: 'Data Structures', color: '#f59e0b', goal: 'Master all DS', startDate: null, endDate: null },
+  { id: 's4', name: 'Operating Systems', color: '#10b981', goal: 'Complete OS concepts', startDate: null, endDate: null },
+  { id: 's5', name: 'Computer Networks', color: '#3b82f6', goal: 'Learn networking', startDate: null, endDate: null },
 ];
 
 export function useStudyTracker() {
@@ -40,6 +40,14 @@ export function useStudyTracker() {
     const t = new Date();
     return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
   });
+
+  const [focusSessions, setFocusSessions] = useState(() =>
+    loadFromStorage('st_focus_sessions', [])
+  );
+
+  useEffect(() => {
+    saveToStorage('st_focus_sessions', focusSessions);
+  }, [focusSessions]);
 
   const getTodayDateString = () => {
     const t = new Date();
@@ -74,6 +82,10 @@ export function useStudyTracker() {
 
   const updateSubject = useCallback((id, name) => {
     setSubjects(prev => prev.map(s => s.id === id ? { ...s, name } : s));
+  }, []);
+
+  const updateSubjectGoal = useCallback((id, goal, startDate, endDate) => {
+    setSubjects(prev => prev.map(s => s.id === id ? { ...s, goal, startDate, endDate } : s));
   }, []);
 
   // Task CRUD for a given date
@@ -139,6 +151,74 @@ export function useStudyTracker() {
     });
   }, []);
 
+  // Focus Session functions
+  const updateTaskFocusSession = useCallback((date, taskId, focusTime, breakTime, sessionsNeeded) => {
+    setDayDataMap(prev => {
+      const dayData = prev[date];
+      if (!dayData) return prev;
+      return {
+        ...prev,
+        [date]: {
+          ...dayData,
+          tasks: dayData.tasks.map(t =>
+            t.id === taskId ? { ...t, focusTime, breakTime, sessionsNeeded, sessionsCompleted: t.sessionsCompleted || 0 } : t
+          ),
+        },
+      };
+    });
+  }, []);
+
+  const incrementTaskFocusSession = useCallback((date, taskId) => {
+    setDayDataMap(prev => {
+      const dayData = prev[date];
+      if (!dayData) return prev;
+      return {
+        ...prev,
+        [date]: {
+          ...dayData,
+          tasks: dayData.tasks.map(t =>
+            t.id === taskId ? { ...t, sessionsCompleted: (t.sessionsCompleted || 0) + 1 } : t
+          ),
+        },
+      };
+    });
+  }, []);
+
+  // Focus Session History - log completed sessions
+  const logFocusSession = useCallback((sessionId, taskTopic, subject, startTime, endTime, durationMinutes) => {
+    setFocusSessions(prev => [
+      ...prev,
+      {
+        id: generateId(),
+        sessionId,
+        taskTopic,
+        subject,
+        date: startTime.split('T')[0],
+        startTime,
+        endTime,
+        durationMinutes,
+      },
+    ]);
+  }, []);
+
+  const getFocusSessionsForDate = useCallback((date) => {
+    return focusSessions.filter(s => s.date === date);
+  }, [focusSessions]);
+
+  const getFocusSessionsForWeek = useCallback((dates) => {
+    return focusSessions.filter(s => dates.includes(s.date));
+  }, [focusSessions]);
+
+  const getFocusSessionsForMonth = useCallback((year, month) => {
+    const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}`;
+    return focusSessions.filter(s => s.date.startsWith(monthPrefix));
+  }, [focusSessions]);
+
+  const getTotalFocusTimeForDate = useCallback((date) => {
+    const sessions = getFocusSessionsForDate(date);
+    return sessions.reduce((total, s) => total + s.durationMinutes, 0);
+  }, [getFocusSessionsForDate]);
+
   // Stats helpers
   const getDayTasks = useCallback((date) => {
     return dayDataMap[date]?.tasks || [];
@@ -191,6 +271,55 @@ export function useStudyTracker() {
     }
     return subjectMap;
   }, [getDayTasks]);
+
+  // Subject Timeline Stats - calculates progress for a subject within date range
+  const getSubjectTimelineStats = useCallback((subjectId, startDate, endDate) => {
+    if (!startDate || !endDate) return { total: 0, completed: 0, percentage: 0, daysTotal: 0, daysCompleted: 0, daysRemaining: 0 };
+    
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    let total = 0;
+    let completed = 0;
+    let daysWithTasks = 0;
+    let daysCompleted = 0;
+    
+    const current = new Date(start);
+    while (current <= end) {
+      const dateStr = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
+      const tasks = getDayTasks(dateStr).filter(t => {
+        const subj = subjects.find(s => s.name === t.subject);
+        return subj && subj.id === subjectId;
+      });
+      
+      if (tasks.length > 0) {
+        daysWithTasks++;
+        const allDone = tasks.length > 0 && tasks.every(t => t.done);
+        if (allDone) daysCompleted++;
+        tasks.forEach(t => {
+          total++;
+          if (t.done) completed++;
+        });
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    
+    const daysTotal = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    const daysPassed = Math.ceil((today - start) / (1000 * 60 * 60 * 24));
+    const daysRemaining = Math.max(0, daysTotal - Math.max(0, daysPassed));
+    
+    return {
+      total,
+      completed,
+      percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
+      daysTotal,
+      daysCompleted,
+      daysRemaining,
+      daysPassed: Math.max(0, Math.min(daysPassed, daysTotal)),
+    };
+  }, [getDayTasks, subjects]);
 
   const exportData = useCallback(() => {
     return {
@@ -263,6 +392,7 @@ export function useStudyTracker() {
     addSubject,
     removeSubject,
     updateSubject,
+    updateSubjectGoal,
     dayDataMap,
     selectedDate,
     setSelectedDate,
@@ -270,11 +400,19 @@ export function useStudyTracker() {
     toggleTask,
     removeTask,
     updateTask,
+    updateTaskFocusSession,
+    incrementTaskFocusSession,
+    logFocusSession,
+    getFocusSessionsForDate,
+    getFocusSessionsForWeek,
+    getFocusSessionsForMonth,
+    getTotalFocusTimeForDate,
     getDayTasks,
     getDayStats,
     getWeekStats,
     getMonthStats,
     getSubjectStats,
+    getSubjectTimelineStats,
     exportData,
     importData,
     resetAllData,

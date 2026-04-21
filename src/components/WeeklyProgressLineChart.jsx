@@ -1,4 +1,4 @@
-import { DAY_NAMES } from '../utils/calender.js';
+import { DAY_NAMES } from '../utils/calender';
 
 export default function WeeklyProgressLineChart({ weekDates, getDayStats, selectedDate, setSelectedDate }) {
   const chartWidth = 760;

@@ -1,6 +1,9 @@
-import { DAY_NAMES } from '../utils/calender.js';
+import { DAY_NAMES } from '../utils/calender';
 
 export default function WeeklyView({ weekDates, selectedDate, setSelectedDate, getDayTasks, getDayStats, subjects }) {
+  // Guard: don't render until weekDates is ready
+  // Safety guard
+  if (!weekDates?.length) return null;
   const getSubjectColor = (name) => {
     return subjects.find(s => s.name === name)?.color || '#6366f1';
   };

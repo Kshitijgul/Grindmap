@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --ink:#0f0e17;--ink2:#2e2d3d;--ink3:#6b6a7a;
+    --paper:#faf9f7;--surface:#f2f0eb;--card:#ffffff;
+    --accent:#5c3bfe;--accent2:#ff6b35;--accent3:#00c896;
+    --accent-light:#ede9ff;
+    --radius:14px;--radius-sm:8px;
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
+
+  /* NAV */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:var(--paper);border-bottom:1px solid rgba(0,0,0,0.07)}
+  .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-0.5px;color:var(--ink)}
+  .logo span{color:var(--accent)}
+  .nav-links{display:flex;gap:32px;align-items:center}
+  .nav-links a{font-size:14px;color:var(--ink3);text-decoration:none;font-weight:500;transition:color .2s}
+  .nav-links a:hover{color:var(--ink)}
+  .nav-cta{display:flex;gap:10px;align-items:center}
+  .btn-ghost{padding:8px 18px;border:1.5px solid rgba(0,0,0,0.15);border-radius:100px;font-size:13px;font-weight:500;background:none;cursor:pointer;color:var(--ink);font-family:'DM Sans',sans-serif;transition:all .2s}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-primary{padding:9px 20px;border-radius:100px;font-size:13px;font-weight:500;background:var(--accent);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+  .btn-primary:hover{opacity:0.88;transform:translateY(-1px)}
+
+  /* HERO */
+  .hero{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;padding:72px 48px 48px;max-width:1200px;margin:0 auto}
+  .hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:600;padding:5px 12px;border-radius:100px;margin-bottom:20px;letter-spacing:.3px}
+  .badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .hero h1{font-family:'Syne',sans-serif;font-size:52px;font-weight:800;line-height:1.08;letter-spacing:-2px;color:var(--ink);margin-bottom:20px}
+  .hero h1 em{font-style:normal;color:var(--accent)}
+  .hero p{font-size:17px;color:var(--ink3);line-height:1.7;max-width:400px;margin-bottom:32px}
+  .hero-actions{display:flex;gap:12px;align-items:center}
+  .btn-hero{padding:14px 28px;border-radius:100px;font-size:15px;font-weight:500;background:var(--accent);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+  .btn-hero:hover{opacity:0.88;transform:translateY(-2px)}
+  .btn-hero-ghost{padding:14px 28px;border-radius:100px;font-size:15px;font-weight:500;background:none;color:var(--ink);border:1.5px solid rgba(0,0,0,0.15);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+  .btn-hero-ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .hero-stat-row{display:flex;gap:24px;margin-top:40px}
+  .hero-stat{text-align:left}
+  .hero-stat-num{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--ink)}
+  .hero-stat-label{font-size:12px;color:var(--ink3);margin-top:2px}
+
+  /* HERO CARD (right side) */
+  .hero-visual{position:relative}
+  .main-card{background:var(--card);border-radius:20px;border:1px solid rgba(0,0,0,0.08);padding:24px;box-shadow:0 8px 32px rgba(0,0,0,0.08)}
+  .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--ink)}
+  .streak-badge{display:flex;align-items:center;gap:4px;background:#fff5ee;color:#e8560a;font-size:12px;font-weight:600;padding:5px 10px;border-radius:100px}
+
+  /* progress bars */
+  .task-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+  .task-row{display:flex;flex-direction:column;gap:6px}
+  .task-meta{display:flex;justify-content:space-between;align-items:center}
+  .task-name{font-size:13px;font-weight:500;color:var(--ink2)}
+  .task-pct{font-size:12px;color:var(--ink3)}
+  .bar-bg{height:7px;border-radius:100px;background:var(--surface)}
+  .bar-fill{height:7px;border-radius:100px;transition:width .8s}
+  .bar-purple{background:var(--accent)}
+  .bar-orange{background:var(--accent2)}
+  .bar-green{background:var(--accent3)}
+
+  /* mini calendar heatmap */
+  .heatmap-label{font-size:11px;font-weight:500;color:var(--ink3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:8px}
+  .heatmap-grid{display:grid;grid-template-columns:repeat(14,1fr);gap:3px}
+  .hm-cell{aspect-ratio:1;border-radius:3px;background:var(--surface)}
+  .hm-1{background:#d4caf9}
+  .hm-2{background:#a894f3}
+  .hm-3{background:#7b5ef5}
+  .hm-4{background:var(--accent)}
+
+  /* floating mini cards */
+  .float-card{position:absolute;background:var(--card);border:1px solid rgba(0,0,0,0.08);border-radius:14px;padding:12px 16px;box-shadow:0 6px 24px rgba(0,0,0,0.09)}
+  .float-top{top:-24px;right:-24px;display:flex;align-items:center;gap:8px}
+  .float-bottom{bottom:-20px;left:-20px}
+  .avatar-row{display:flex}
+  .avatar{width:26px;height:26px;border-radius:50%;border:2px solid white;margin-left:-6px;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:600;color:#fff}
+  .av1{background:#5c3bfe}.av2{background:#ff6b35}.av3{background:#00c896}.av4{background:#e8560a}
+  .float-label{font-size:12px;font-weight:600;color:var(--ink)}
+  .float-sub{font-size:11px;color:var(--ink3)}
+  .streak-num{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#e8560a}
+  .streak-text{font-size:11px;color:var(--ink3);margin-top:0}
+
+  /* FEATURES */
+  .features{padding:64px 48px;max-width:1200px;margin:0 auto}
+  .section-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+  .section-title{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;letter-spacing:-1px;color:var(--ink);margin-bottom:48px;max-width:480px;line-height:1.15}
+  .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .feat-card{background:var(--card);border:1px solid rgba(0,0,0,0.07);border-radius:var(--radius);padding:28px;transition:transform .2s,box-shadow .2s;cursor:default}
+  .feat-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.08)}
+  .feat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px}
+  .fi-purple{background:var(--accent-light)}
+  .fi-orange{background:#fff0ea}
+  .fi-green{background:#e6faf5}
+  .fi-blue{background:#e8f0ff}
+  .fi-pink{background:#ffeef5}
+  .fi-yellow{background:#fffae8}
+  .feat-card h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--ink);margin-bottom:8px}
+  .feat-card p{font-size:13px;color:var(--ink3);line-height:1.65}
+
+  /* PROGRESS SECTION */
+  .progress-section{background:var(--surface);padding:64px 48px}
+  .progress-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+  .weekly-card{background:var(--card);border-radius:20px;padding:28px;border:1px solid rgba(0,0,0,0.07)}
+  .wc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+  .wc-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--ink)}
+  .view-tabs{display:flex;gap:4px;background:var(--surface);border-radius:100px;padding:3px}
+  .vtab{padding:5px 12px;border-radius:100px;font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;border:none;background:none;font-family:'DM Sans',sans-serif;color:var(--ink3)}
+  .vtab.active{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,0.1)}
+  .bar-chart{display:flex;align-items:flex-end;gap:8px;height:100px;margin-bottom:10px}
+  .bc-bar{flex:1;border-radius:6px 6px 0 0;background:var(--accent-light);transition:height .3s;cursor:pointer;position:relative}
+  .bc-bar.today{background:var(--accent)}
+  .bc-bar:hover .bar-tooltip{opacity:1}
+  .bar-tooltip{position:absolute;top:-28px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:10px;padding:3px 7px;border-radius:5px;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none}
+  .day-labels{display:flex;gap:8px}
+  .dl{flex:1;text-align:center;font-size:10px;color:var(--ink3)}
+  .dl.today{color:var(--accent);font-weight:600}
+
+  /* CTA section */
+  .cta-section{padding:80px 48px;text-align:center;max-width:700px;margin:0 auto}
+  .cta-section h2{font-family:'Syne',sans-serif;font-size:44px;font-weight:800;letter-spacing:-1.5px;color:var(--ink);margin-bottom:16px;line-height:1.1}
+  .cta-section p{font-size:16px;color:var(--ink3);margin-bottom:32px;line-height:1.7}
+  .cta-btns{display:flex;justify-content:center;gap:12px}
+
+  /* FOOTER */
+  footer{border-top:1px solid rgba(0,0,0,0.07);padding:24px 48px;display:flex;justify-content:space-between;align-items:center}
+  .footer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--ink)}
+  .footer-logo span{color:var(--accent)}
+  .footer-links{display:flex;gap:24px}
+  .footer-links a{font-size:12px;color:var(--ink3);text-decoration:none}
+  .footer-links a:hover{color:var(--accent)}
+  .footer-copy{font-size:12px;color:var(--ink3)}
+
+  /* ANIMATIONS */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .hero-left{animation:fadeUp .6s ease forwards}
+  .hero-visual{animation:fadeUp .6s .2s ease both}
+  .feat-card{animation:fadeUp .5s ease both}
+  .feat-card:nth-child(1){animation-delay:.05s}.feat-card:nth-child(2){animation-delay:.1s}.feat-card:nth-child(3){animation-delay:.15s}.feat-card:nth-child(4){animation-delay:.2s}.feat-card:nth-child(5){animation-delay:.25s}.feat-card:nth-child(6){animation-delay:.3s}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Study<span>Track</span></div>
+  <div class="nav-links">
+    <a href="#">Features</a>
+    <a href="#">Progress</a>
+    <a href="#">Streaks</a>
+    <a href="#">Pricing</a>
+  </div>
+  <div class="nav-cta">
+    <button class="btn-ghost">Log in</button>
+    <button class="btn-primary">Get started free</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section style="max-width:1200px;margin:0 auto">
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-badge"><span class="badge-dot"></span> Built for focused learners</div>
+      <h1>Study <em>smarter</em>,<br>track every<br>step forward.</h1>
+      <p>Set goals, build sessions, and visualize your growth — daily, weekly, and monthly. Your streak is waiting.</p>
+      <div class="hero-actions">
+        <button class="btn-hero">Start tracking free</button>
+        <button class="btn-hero-ghost">See how it works</button>
+      </div>
+      <div class="hero-stat-row">
+        <div class="hero-stat">
+          <div class="hero-stat-num">48K+</div>
+          <div class="hero-stat-label">Active learners</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">2.1M</div>
+          <div class="hero-stat-label">Sessions logged</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">94%</div>
+          <div class="hero-stat-label">Goal completion rate</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <!-- floating top card -->
+      <div class="float-card float-top">
+        <div class="avatar-row">
+          <div class="avatar av1">A</div><div class="avatar av2">S</div><div class="avatar av3">R</div><div class="avatar av4">+</div>
+        </div>
+        <div>
+          <div class="float-label">Study group active</div>
+          <div class="float-sub">4 members online now</div>
+        </div>
+      </div>
+
+      <div class="main-card">
+        <div class="card-header">
+          <div class="card-title">Today's plan</div>
+          <div class="streak-badge">🔥 14 day streak</div>
+        </div>
+
+        <div class="task-list">
+          <div class="task-row">
+            <div class="task-meta"><span class="task-name">Mathematics — Calculus</span><span class="task-pct">78%</span></div>
+            <div class="bar-bg"><div class="bar-fill bar-purple" style="width:78%"></div></div>
+          </div>
+          <div class="task-row">
+            <div class="task-meta"><span class="task-name">Physics — Mechanics</span><span class="task-pct">55%</span></div>
+            <div class="bar-bg"><div class="bar-fill bar-orange" style="width:55%"></div></div>
+          </div>
+          <div class="task-row">
+            <div class="task-meta"><span class="task-name">Chemistry — Organic</span><span class="task-pct">33%</span></div>
+            <div class="bar-bg"><div class="bar-fill bar-green" style="width:33%"></div></div>
+          </div>
+        </div>
+
+        <div class="heatmap-label">This month's activity</div>
+        <div class="heatmap-grid" id="hmap"></div>
+      </div>
+
+      <!-- floating bottom card -->
+      <div class="float-card float-bottom">
+        <div class="streak-num">🔥 14</div>
+        <div class="streak-text">Day streak — keep going!</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="section-label">What you get</div>
+  <div class="section-title">Everything your study life needs.</div>
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-icon fi-purple">📋</div>
+      <h3>Smart task planner</h3>
+      <p>Break subjects into focused sessions. Set deadlines, assign priorities, and never lose track of what's due.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon fi-orange">⏱️</div>
+      <h3>Timeline scheduler</h3>
+      <p>Plan your study blocks visually. Drag and drop sessions across your day to build the perfect study routine.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon fi-green">📈</div>
+      <h3>Progress analytics</h3>
+      <p>See your growth daily, weekly, and monthly with beautiful charts and heatmaps that keep you motivated.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon fi-yellow">🔥</div>
+      <h3>Streak system</h3>
+      <p>Build momentum with daily streaks. Miss a day — break the chain. The pressure that makes habits stick.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon fi-blue">🎯</div>
+      <h3>Goal setting</h3>
+      <p>Set weekly and monthly targets for each subject. Get notified when you're falling behind and need to push harder.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon fi-pink">👥</div>
+      <h3>Study groups</h3>
+      <p>Create or join groups with friends. Share progress, compete on leaderboards, and hold each other accountable.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PROGRESS SECTION -->
+<section class="progress-section">
+  <div class="progress-inner">
+    <div>
+      <div class="section-label">Progress views</div>
+      <div class="section-title" style="font-size:32px">See your growth from every angle.</div>
+      <p style="font-size:15px;color:var(--ink3);line-height:1.75;max-width:380px;margin-bottom:28px">Switch between daily, weekly, and monthly views. Know exactly how many hours you've studied, which subjects need more attention, and when your peak performance times are.</p>
+      <button class="btn-hero" style="font-size:14px;padding:12px 24px">Explore your dashboard</button>
+    </div>
+
+    <div class="weekly-card">
+      <div class="wc-header">
+        <div class="wc-title">Study hours this week</div>
+        <div class="view-tabs">
+          <button class="vtab">Day</button>
+          <button class="vtab active">Week</button>
+          <button class="vtab">Month</button>
+        </div>
+      </div>
+      <div class="bar-chart" id="barchart"></div>
+      <div class="day-labels">
+        <div class="dl">Mon</div><div class="dl">Tue</div><div class="dl">Wed</div><div class="dl">Thu</div><div class="dl today">Fri</div><div class="dl">Sat</div><div class="dl">Sun</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px">
+        <div style="background:var(--surface);border-radius:10px;padding:14px">
+          <div style="font-size:11px;color:var(--ink3);margin-bottom:4px">Total this week</div>
+          <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--ink)">18.5 hrs</div>
+        </div>
+        <div style="background:var(--accent-light);border-radius:10px;padding:14px">
+          <div style="font-size:11px;color:var(--accent);margin-bottom:4px">Best day</div>
+          <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--accent)">4.2 hrs</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Ready to own your study life?</h2>
+  <p>Join 48,000+ students who've turned consistent study sessions into consistent results. Free forever, no credit card needed.</p>
+  <div class="cta-btns">
+    <button class="btn-hero">Create free account</button>
+    <button class="btn-hero-ghost">Watch demo</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Study<span>Track</span></div>
+  <div class="footer-links">
+    <a href="#">About</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a>
+  </div>
+  <div class="footer-copy">© 2026 StudyTrack</div>
+</footer>
+
+<script>
+  // Heatmap
+  const hmap = document.getElementById('hmap');
+  const levels = [0,0,1,0,2,1,3,2,1,0,2,3,4,1,2,3,1,2,0,3,4,3,2,1,0,2,3,4,1,0];
+  const cls = ['','hm-1','hm-2','hm-3','hm-4'];
+  for(let i=0;i<28;i++){
+    const c = document.createElement('div');
+    c.className = 'hm-cell ' + (cls[levels[i%levels.length]]||'');
+    hmap.appendChild(c);
+  }
+
+  // Bar chart
+  const bc = document.getElementById('barchart');
+  const hrs = [2.5,3.8,2.1,4.2,3.6,1.2,1.1];
+  const maxH = Math.max(...hrs);
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  hrs.forEach((h,i)=>{
+    const bar = document.createElement('div');
+    const pct = Math.round((h/maxH)*100);
+    bar.className = 'bc-bar' + (i===4?' today':'');
+    bar.style.height = pct+'%';
+    bar.innerHTML = `<div class="bar-tooltip">${h}h</div>`;
+    bc.appendChild(bar);
+  });
+
+  // Tab switching (visual only)
+  document.querySelectorAll('.vtab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      document.querySelectorAll('.vtab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

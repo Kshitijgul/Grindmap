@@ -46,3 +46,6 @@ input:focus, select:focus, button:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
 }
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-track-transparent::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thumb-gray-800::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 99px; }

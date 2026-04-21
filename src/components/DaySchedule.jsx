@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { DAY_NAMES, MONTH_NAMES } from '../utils/calender.js';
+import { DAY_NAMES, MONTH_NAMES } from '../utils/calender';
+import FocusTimer from './FocusTimer';
 
-export default function DaySchedule({ date, tasks, subjects, addTask, toggleTask, removeTask, updateTask, getDayTasks }) {
+export default function DaySchedule({ date, tasks, subjects, addTask, toggleTask, removeTask, updateTask, getDayTasks, updateTaskFocusSession, incrementTaskFocusSession, logFocusSession }) {
   const [selectedSubject, setSelectedSubject] = useState(subjects[0]?.name || '');
   const [topic, setTopic] = useState('');
   const [editingTask, setEditingTask] = useState(null);
   const [editTopic, setEditTopic] = useState('');
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [focusTimerTask, setFocusTimerTask] = useState(null);
 
   const d = new Date(date + 'T00:00:00');
   const dayName = DAY_NAMES[d.getDay()];
@@ -296,6 +298,18 @@ export default function DaySchedule({ date, tasks, subjects, addTask, toggleTask
               {/* Actions */}
               <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity flex-shrink-0">
                 <button
+                  onClick={() => setFocusTimerTask(task)}
+                  className="text-gray-500 hover:text-indigo-400 text-xs p-1.5 rounded hover:bg-gray-800 transition flex items-center gap-1"
+                  title="Start Focus Session"
+                >
+                  🎯
+                  {task.sessionsCompleted > 0 && (
+                    <span className="text-[10px] bg-indigo-500/20 text-indigo-400 px-1 rounded">
+                      {task.sessionsCompleted}
+                    </span>
+                  )}
+                </button>
+                <button
                   onClick={() => startEdit(task)}
                   className="text-gray-500 hover:text-indigo-400 text-xs p-1.5 rounded hover:bg-gray-800 transition"
                   title="Edit"
@@ -332,6 +346,18 @@ export default function DaySchedule({ date, tasks, subjects, addTask, toggleTask
             </span>
           )}
         </div>
+      )}
+
+      {/* Focus Timer Modal */}
+      {focusTimerTask && (
+        <FocusTimer
+          task={{ ...focusTimerTask, subjectColor: getSubjectColor(focusTimerTask.subject) }}
+          date={date}
+          updateTaskFocusSession={updateTaskFocusSession}
+          incrementTaskFocusSession={incrementTaskFocusSession}
+          logFocusSession={logFocusSession}
+          onClose={() => setFocusTimerTask(null)}
+        />
       )}
     </div>
   );

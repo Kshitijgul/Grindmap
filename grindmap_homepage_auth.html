@@ -1,0 +1,216 @@
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0d0f;--bg2:#161619;--bg3:#1e1e23;--bg4:#27272e;
+  --border:#2e2e36;--border2:#3a3a45;
+  --text:#f0eff8;--text2:#9896a8;--text3:#5e5c70;
+  --accent:#c8ff47;--accent2:#7c5cfc;
+  --accent-dim:#1e2f00;
+  --radius:10px;--radius-lg:16px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100vh}
+
+nav{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Space Mono',monospace;font-weight:700;font-size:18px;letter-spacing:-0.5px;color:var(--text)}
+.logo-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:18px;height:18px}
+.logo span{color:var(--accent)}
+.nav-right{display:flex;gap:8px}
+.nbtn{padding:8px 18px;border-radius:100px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .18s;border:1px solid var(--border2);background:none;color:var(--text2)}
+.nbtn:hover{border-color:var(--accent);color:var(--accent)}
+.nbtn.fill{background:var(--accent);color:#0d0d0f;border-color:var(--accent)}
+.nbtn.fill:hover{opacity:.88}
+
+.page{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 61px)}
+
+.left{padding:64px 40px 40px 64px;display:flex;flex-direction:column;justify-content:center}
+.eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:'';display:inline-block;width:20px;height:2px;background:var(--accent)}
+h1{font-family:'Space Mono',monospace;font-size:52px;font-weight:700;line-height:1.05;letter-spacing:-2px;color:var(--text);margin-bottom:20px}
+h1 em{font-style:normal;color:var(--accent)}
+.subtitle{font-size:16px;color:var(--text2);line-height:1.75;max-width:380px;margin-bottom:36px}
+.feat-list{display:flex;flex-direction:column;gap:12px;margin-bottom:40px}
+.feat-row{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text2)}
+.feat-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.stat-row{display:flex;gap:32px;padding-top:32px;border-top:1px solid var(--border)}
+.stat{display:flex;flex-direction:column;gap:3px}
+.stat-n{font-family:'Space Mono',monospace;font-size:24px;font-weight:700;color:var(--text)}
+.stat-l{font-size:11px;color:var(--text3);letter-spacing:.5px}
+
+.right{padding:32px 48px 32px 24px;display:flex;align-items:center;justify-content:center}
+.auth-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);width:100%;max-width:400px;overflow:hidden}
+.auth-tabs{display:flex;border-bottom:1px solid var(--border)}
+.atab{flex:1;padding:16px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;color:var(--text3);background:none;border:none;font-family:'Space Grotesk',sans-serif;transition:all .18s;position:relative}
+.atab.active{color:var(--text);background:var(--bg3)}
+.atab.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent)}
+.atab:hover:not(.active){color:var(--text2)}
+.auth-body{padding:28px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:7px}
+.field input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;font-size:14px;color:var(--text);font-family:'Space Grotesk',sans-serif;outline:none;transition:border .18s}
+.field input:focus{border-color:var(--accent)}
+.field input::placeholder{color:var(--text3)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.submit-btn{width:100%;padding:13px;border-radius:var(--radius);background:var(--accent);color:#0d0d0f;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;border:none;cursor:pointer;transition:all .18s;letter-spacing:.3px;margin-top:8px}
+.submit-btn:hover{opacity:.88;transform:translateY(-1px)}
+.auth-footer{text-align:center;padding-top:16px;font-size:12px;color:var(--text3)}
+.auth-footer a{color:var(--accent2);text-decoration:none;font-weight:500}
+.divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--text3);font-size:11px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.social-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.social-btn{padding:10px;border-radius:var(--radius);background:none;border:1px solid var(--border);color:var(--text2);font-size:12px;font-weight:500;font-family:'Space Grotesk',sans-serif;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:7px}
+.social-btn:hover{border-color:var(--border2);color:var(--text)}
+.hint{font-size:11px;color:var(--text3);margin-top:6px}
+
+.preview-strip{background:var(--bg3);border-top:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;gap:12px}
+.ps-icon{width:36px;height:36px;background:var(--accent-dim);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ps-icon svg{width:16px;height:16px}
+.ps-text{font-size:12px;color:var(--text2);line-height:1.5}
+.ps-text strong{color:var(--accent);font-weight:600}
+.tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.tag{padding:3px 10px;border-radius:100px;background:var(--bg4);border:1px solid var(--border);font-size:10px;color:var(--text3)}
+
+.bottom-bar{background:var(--bg2);border-top:1px solid var(--border);padding:20px 64px;display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
+.bb-item h4{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.bb-item p{font-size:12px;color:var(--text3);line-height:1.6}
+
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+</style>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 18 18" fill="none"><path d="M3 15L9 3L15 15" stroke="#0d0d0f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10.5H12.5" stroke="#0d0d0f" stroke-width="2.5" stroke-linecap="round"/></svg>
+    </div>
+    GRIND<span>MAP</span>
+  </div>
+  <div class="nav-right">
+    <button class="nbtn" onclick="showTab('login')">Log in</button>
+    <button class="nbtn fill" onclick="showTab('register')">Get started</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="left">
+    <div class="eyebrow">Study OS for serious learners</div>
+    <h1>Map your<br><em>grind.</em><br>Own the<br>outcome.</h1>
+    <p class="subtitle">Track sessions, build streaks, and see every hour compound into real progress. Built for students who don't just study — they execute.</p>
+    <div class="feat-list">
+      <div class="feat-row"><span class="feat-dot"></span>Task planner with deadlines and priorities</div>
+      <div class="feat-row"><span class="feat-dot"></span>Daily, weekly, monthly progress views</div>
+      <div class="feat-row"><span class="feat-dot"></span>Streak system to keep momentum alive</div>
+      <div class="feat-row"><span class="feat-dot"></span>Visual heatmap of your study activity</div>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><span class="stat-n">48K+</span><span class="stat-l">Students</span></div>
+      <div class="stat"><span class="stat-n">2.1M</span><span class="stat-l">Sessions</span></div>
+      <div class="stat"><span class="stat-n">94%</span><span class="stat-l">Goal rate</span></div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="atab active" id="tab-login" onclick="showTab('login')">Log in</button>
+        <button class="atab" id="tab-register" onclick="showTab('register')">Create account</button>
+      </div>
+
+      <div class="auth-body">
+        <div class="tab-panel active" id="panel-login">
+          <div class="social-btns">
+            <button class="social-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Google
+            </button>
+            <button class="social-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+              GitHub
+            </button>
+          </div>
+          <div class="divider">or continue with email</div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" placeholder="you@example.com">
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" placeholder="••••••••••">
+          </div>
+          <button class="submit-btn">Log in to GrindMap</button>
+          <div class="auth-footer">No account? <a href="#" onclick="showTab('register');return false">Create one free</a></div>
+        </div>
+
+        <div class="tab-panel" id="panel-register">
+          <div class="social-btns">
+            <button class="social-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Google
+            </button>
+            <button class="social-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+              GitHub
+            </button>
+          </div>
+          <div class="divider">or sign up with email</div>
+          <div class="row2">
+            <div class="field">
+              <label>First name</label>
+              <input type="text" placeholder="Alex">
+            </div>
+            <div class="field">
+              <label>Last name</label>
+              <input type="text" placeholder="Sharma">
+            </div>
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" placeholder="you@example.com">
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" placeholder="Min. 8 characters">
+            <div class="hint">Use a mix of letters, numbers, and symbols</div>
+          </div>
+          <button class="submit-btn">Create my GrindMap</button>
+          <div class="auth-footer">Already have an account? <a href="#" onclick="showTab('login');return false">Log in</a></div>
+        </div>
+      </div>
+
+      <div class="preview-strip">
+        <div class="ps-icon">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M8 2L10 6H14L11 9L12 13L8 10.5L4 13L5 9L2 6H6L8 2Z" fill="#c8ff47"/></svg>
+        </div>
+        <div class="ps-text">
+          Once logged in, you'll see your <strong>study dashboard</strong> — streaks, heatmap, and today's plan.
+          <div class="tags"><span class="tag">Streak tracker</span><span class="tag">Progress heatmap</span><span class="tag">Goal setting</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="bb-item">
+    <h4>Fast onboarding</h4>
+    <p>Sign up in seconds with email or social. Your study plan is ready before you close the tab.</p>
+  </div>
+  <div class="bb-item">
+    <h4>Personal dashboard</h4>
+    <p>After login, see your streak, today's tasks, and progress across every subject you're tracking.</p>
+  </div>
+  <div class="bb-item">
+    <h4>Works everywhere</h4>
+    <p>Designed to look sharp on desktop, tablet, and mobile — study anywhere, track everything.</p>
+  </div>
+</div>
+
+<script>
+function showTab(tab){
+  document.getElementById('panel-login').classList.toggle('active', tab==='login');
+  document.getElementById('panel-register').classList.toggle('active', tab==='register');
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+}
+</script>
