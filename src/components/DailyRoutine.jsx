@@ -5,17 +5,7 @@ const DEFAULT_ROUTINE = [
   { id: 2, time: '06:15', label: 'Morning Walk / Exercise', emoji: '🏃', category: 'health' },
   { id: 3, time: '07:00', label: 'Fresh Up & Breakfast', emoji: '🍳', category: 'life' },
   { id: 4, time: '08:00', label: 'Deep Study Block 1', emoji: '📚', category: 'study' },
-  { id: 5, time: '10:00', label: 'Short Break', emoji: '☕', category: 'break' },
-  { id: 6, time: '10:15', label: 'Deep Study Block 2', emoji: '🧠', category: 'study' },
-  { id: 7, time: '12:30', label: 'Lunch Break', emoji: '🍱', category: 'life' },
-  { id: 8, time: '13:30', label: 'Revision / Practice Problems', emoji: '✏️', category: 'study' },
-  { id: 9, time: '15:30', label: 'Power Nap (20 min)', emoji: '😴', category: 'health' },
-  { id: 10, time: '16:00', label: 'Deep Study Block 3', emoji: '💻', category: 'study' },
-  { id: 11, time: '18:00', label: 'Evening Walk / Relax', emoji: '🌅', category: 'health' },
-  { id: 12, time: '19:00', label: 'Dinner', emoji: '🍽️', category: 'life' },
-  { id: 13, time: '19:45', label: 'Light Review / Notes', emoji: '📝', category: 'study' },
-  { id: 14, time: '21:00', label: 'Wind Down — No Screens', emoji: '🌙', category: 'break' },
-  { id: 15, time: '22:00', label: 'Sleep', emoji: '🛏️', category: 'life' },
+
 ];
 
 const CATEGORY_COLORS = {
