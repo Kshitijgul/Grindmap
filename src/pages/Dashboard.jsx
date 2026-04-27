@@ -373,16 +373,30 @@ export default function Dashboard() {
 
   function getStreakDays(tasks) {
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     let streak = 0;
+
     for (let i = 0; i < 365; i++) {
       const d = new Date(today);
       d.setDate(today.getDate() - i);
       const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
       const dayTasks = tasks[dateStr] || [];
-      if (dayTasks.length === 0) break;
-      if (!dayTasks.every((t) => t.completed)) break;
+
+      // Skip today if it has no tasks yet — don't break streak
+      if (i === 0 && dayTasks.length === 0) continue;
+
+      // For past days — if no tasks, streak is broken
+      if (i > 0 && dayTasks.length === 0) break;
+
+      // If tasks exist but none completed — streak broken
+      const completedCount = dayTasks.filter((t) => t.completed).length;
+      if (completedCount === 0) break;
+
+      // At least 1 task completed — count this day
       streak++;
     }
+
     return streak;
   }
 

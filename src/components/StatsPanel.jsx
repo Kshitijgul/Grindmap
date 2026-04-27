@@ -12,7 +12,7 @@ export default function StatsPanel({ monthStats, weekStats, subjectStats, subjec
     .sort((a, b) => b[1].total - a[1].total);
 
   return (
-    <div className="space-y-4">
+    <div className="p-4 lg:p-6 space-y-6" >
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-gray-900 rounded-xl border border-gray-800 p-4">
