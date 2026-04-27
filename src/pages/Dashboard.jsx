@@ -11,6 +11,7 @@ import WeeklyProgressLineChart from "../components/WeeklyProgressLineChart";
 import MonthlyProgressLineChart from "../components/MonthlyProgressLineChart";
 import SubjectTimeline from "../components/SubjectTimeline";
 import FocusSessionReport from "../components/FocusSessionReport";
+import DailyRoutine from "../components/DailyRoutine";
 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
@@ -24,7 +25,8 @@ export default function Dashboard() {
   const [subjectGoals, setSubjectGoals] = useState({});
   const [focusSessions, setFocusSessions] = useState({});
   const [loading, setLoading] = useState(true);
-  const [initialLoadDone, setInitialLoadDone] = useState(false); // ← KEY FIX
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
+  const initialLoadDoneRef = useRef(false); // ← ADD THIS// ← KEY FIX
 
   // Load user data from Supabase
   useEffect(() => {
@@ -35,7 +37,7 @@ export default function Dashboard() {
 
   async function loadUserData() {
     // ← KEY FIX: never reload if already loaded once
-    if (initialLoadDone) return;
+    if (initialLoadDoneRef.current) return;
 
     try {
       setLoading(true);
@@ -112,6 +114,7 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
       setInitialLoadDone(true); // ← KEY FIX: mark as loaded
+      initialLoadDoneRef.current = true; // ← ADD THIS
     }
   }
 
@@ -380,20 +383,19 @@ export default function Dashboard() {
       const d = new Date(today);
       d.setDate(today.getDate() - i);
       const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-
       const dayTasks = tasks[dateStr] || [];
 
-      // Skip today if it has no tasks yet — don't break streak
-      if (i === 0 && dayTasks.length === 0) continue;
+      // Skip today entirely — streak is based on PAST completed days
+      if (i === 0) continue;
 
-      // For past days — if no tasks, streak is broken
-      if (i > 0 && dayTasks.length === 0) break;
+      // No tasks on this past day — streak broken
+      if (dayTasks.length === 0) break;
 
-      // If tasks exist but none completed — streak broken
+      // Tasks exist but none completed — streak broken
       const completedCount = dayTasks.filter((t) => t.completed).length;
       if (completedCount === 0) break;
 
-      // At least 1 task completed — count this day
+      // At least 1 task done — count it
       streak++;
     }
 
@@ -645,13 +647,17 @@ export default function Dashboard() {
         </main>
 
         {/* Stats Panel */}
-        <StatsPanel
-          monthStats={getMonthStats(selectedDate, tasks)}
-          weekStats={getWeekStats(selectedDate, tasks)}
-          subjectStats={getSubjectStats(selectedDate, tasks, subjects)}
-          subjects={subjects}
-          streakDays={getStreakDays(tasks)}
-        />
+
+        <div className="flex flex-col gap-4">
+          <DailyRoutine />
+          <StatsPanel
+            monthStats={getMonthStats(selectedDate, tasks)}
+            weekStats={getWeekStats(selectedDate, tasks)}
+            subjectStats={getSubjectStats(selectedDate, tasks, subjects)}
+            subjects={subjects}
+            streakDays={getStreakDays(tasks)}
+          />
+        </div>
       </div>
     </div>
   );
