@@ -12,6 +12,7 @@ import MonthlyProgressLineChart from "../components/MonthlyProgressLineChart";
 import SubjectTimeline from "../components/SubjectTimeline";
 import FocusSessionReport from "../components/FocusSessionReport";
 import DailyRoutine from "../components/DailyRoutine";
+import DraggableDashboard from "../components/DraggableDashboard";
 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
@@ -476,172 +477,195 @@ export default function Dashboard() {
         />
 
         {/* Main Content */}
+        {/* Main Content */}
         <main className="flex-1 lg:pl-72 min-h-screen">
-          <div className="p-4 lg:p-6 space-y-6">
-            {/* Subject Timeline */}
-            <SubjectTimeline
-              subjects={subjects.map((s) => ({
-                ...s,
-                startDate: subjectGoals[s.id]?.start_date || null,
-                endDate: subjectGoals[s.id]?.end_date || null,
-                goal: subjectGoals[s.id]?.goal || null,
-              }))}
-              getSubjectTimelineStats={(subjectId, startDate, endDate) => {
-                if (!startDate || !endDate)
-                  return {
-                    total: 0,
-                    completed: 0,
-                    percentage: 0,
-                    daysCompleted: 0,
-                    daysPassed: 0,
-                    daysRemaining: 0,
-                  };
-                const start = new Date(startDate + "T00:00:00");
-                const end = new Date(endDate + "T00:00:00");
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                let total = 0,
-                  completed = 0,
-                  daysCompleted = 0,
-                  daysPassed = 0;
-                const cursor = new Date(start);
-                while (cursor <= end) {
-                  const d = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
-                  const dayTasks = (tasks[d] || []).filter(
-                    (t) => t.subject_id === subjectId,
-                  );
-                  if (cursor <= today) {
-                    daysPassed++;
-                    if (
-                      dayTasks.length > 0 &&
-                      dayTasks.every((t) => t.completed)
-                    )
-                      daysCompleted++;
-                  }
-                  total += dayTasks.length;
-                  completed += dayTasks.filter((t) => t.completed).length;
-                  cursor.setDate(cursor.getDate() + 1);
-                }
-                const daysRemaining = Math.max(
-                  0,
-                  Math.ceil((end - today) / (1000 * 60 * 60 * 24)),
-                );
-                const percentage =
-                  total > 0 ? Math.round((completed / total) * 100) : 0;
-                return {
-                  total,
-                  completed,
-                  percentage,
-                  daysCompleted,
-                  daysPassed,
-                  daysRemaining,
-                };
+          <div className="p-4 lg:p-6">
+            <DraggableDashboard
+              components={{
+                subjectTimeline: (
+                  <SubjectTimeline
+                    subjects={subjects.map((s) => ({
+                      ...s,
+                      startDate: subjectGoals[s.id]?.start_date || null,
+                      endDate: subjectGoals[s.id]?.end_date || null,
+                      goal: subjectGoals[s.id]?.goal || null,
+                    }))}
+                    getSubjectTimelineStats={(
+                      subjectId,
+                      startDate,
+                      endDate,
+                    ) => {
+                      if (!startDate || !endDate)
+                        return {
+                          total: 0,
+                          completed: 0,
+                          percentage: 0,
+                          daysCompleted: 0,
+                          daysPassed: 0,
+                          daysRemaining: 0,
+                        };
+                      const start = new Date(startDate + "T00:00:00");
+                      const end = new Date(endDate + "T00:00:00");
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      let total = 0,
+                        completed = 0,
+                        daysCompleted = 0,
+                        daysPassed = 0;
+                      const cursor = new Date(start);
+                      while (cursor <= end) {
+                        const d = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
+                        const dayTasks = (tasks[d] || []).filter(
+                          (t) => t.subject_id === subjectId,
+                        );
+                        if (cursor <= today) {
+                          daysPassed++;
+                          if (
+                            dayTasks.length > 0 &&
+                            dayTasks.every((t) => t.completed)
+                          )
+                            daysCompleted++;
+                        }
+                        total += dayTasks.length;
+                        completed += dayTasks.filter((t) => t.completed).length;
+                        cursor.setDate(cursor.getDate() + 1);
+                      }
+                      const daysRemaining = Math.max(
+                        0,
+                        Math.ceil((end - today) / (1000 * 60 * 60 * 24)),
+                      );
+                      const percentage =
+                        total > 0 ? Math.round((completed / total) * 100) : 0;
+                      return {
+                        total,
+                        completed,
+                        percentage,
+                        daysCompleted,
+                        daysPassed,
+                        daysRemaining,
+                      };
+                    }}
+                    selectedDate={selectedDate}
+                    setSelectedDate={setSelectedDate}
+                    updateSubjectGoal={updateSubjectGoal}
+                  />
+                ),
+
+                weeklyView: (
+                  <WeeklyView
+                    weekDates={getWeekDates(selectedDate)}
+                    selectedDate={selectedDate}
+                    setSelectedDate={setSelectedDate}
+                    getDayTasks={(date) => tasks[date] || []}
+                    getDayStats={(date) => {
+                      const dayTasks = tasks[date] || [];
+                      const total = dayTasks.length;
+                      const completed = dayTasks.filter(
+                        (t) => t.completed,
+                      ).length;
+                      const percentage =
+                        total > 0 ? Math.round((completed / total) * 100) : 0;
+                      return { total, completed, percentage };
+                    }}
+                    subjects={subjects}
+                  />
+                ),
+
+                weeklyProgressChart: (
+                  <WeeklyProgressLineChart
+                    weekDates={getWeekDates(selectedDate)}
+                    selectedDate={selectedDate}
+                    setSelectedDate={setSelectedDate}
+                    getDayStats={(date) => {
+                      const dayTasks = tasks[date] || [];
+                      const total = dayTasks.length;
+                      const completed = dayTasks.filter(
+                        (t) => t.completed,
+                      ).length;
+                      const percentage =
+                        total > 0 ? Math.round((completed / total) * 100) : 0;
+                      return { total, completed, percentage };
+                    }}
+                  />
+                ),
+
+                daySchedule: (
+                  <DaySchedule
+                    date={selectedDate}
+                    tasks={(tasks[selectedDate] || []).map((t) => ({
+                      ...t,
+                      done: t.completed,
+                      subject:
+                        subjects.find((s) => s.id === t.subject_id)?.name || "",
+                      subject_id: t.subject_id,
+                    }))}
+                    subjects={subjects}
+                    addTask={(date, subject, topic) => {
+                      const subjectObj = subjects.find(
+                        (s) => s.name === subject,
+                      );
+                      if (subjectObj) addTask(date, subjectObj.id, topic);
+                    }}
+                    toggleTask={(date, taskId) => toggleTask(taskId, date)}
+                    removeTask={(date, taskId) => deleteTask(taskId, date)}
+                    updateTask={(date, taskId, updates) =>
+                      updateTask(taskId, date, updates)
+                    }
+                    getDayTasks={(date) =>
+                      (tasks[date] || []).map((t) => ({
+                        ...t,
+                        done: t.completed,
+                        subject:
+                          subjects.find((s) => s.id === t.subject_id)?.name ||
+                          "",
+                      }))
+                    }
+                    updateTaskFocusSession={() => {}}
+                    incrementTaskFocusSession={() => {}}
+                    logFocusSession={logFocusSession}
+                  />
+                ),
+
+                monthlyProgressChart: (
+                  <MonthlyProgressLineChart
+                    dailyData={getMonthDailyData(selectedDate, tasks)}
+                    selectedDate={selectedDate}
+                    setSelectedDate={setSelectedDate}
+                  />
+                ),
+
+                monthlyBarChart: (
+                  <MonthlyChart
+                    dailyData={getMonthDailyData(selectedDate, tasks)}
+                    selectedDate={selectedDate}
+                    setSelectedDate={setSelectedDate}
+                  />
+                ),
+
+                focusSessionReport: (
+                  <FocusSessionReport
+                    sessions={(focusSessions[selectedDate] || []).map((s) => ({
+                      ...s,
+                      subject:
+                        subjects.find((sub) => sub.id === s.subject_id)?.name ||
+                        "Unknown",
+                      subjectColor:
+                        subjects.find((sub) => sub.id === s.subject_id)
+                          ?.color || "#6366f1",
+                      taskTopic:
+                        tasks[selectedDate]?.find((t) => t.id === s.task_id)
+                          ?.topic || "",
+                      startTime: s.start_time,
+                      endTime: s.end_time,
+                      durationMinutes: s.duration_minutes,
+                    }))}
+                    totalMinutes={(focusSessions[selectedDate] || []).reduce(
+                      (sum, s) => sum + (s.duration_minutes || 0),
+                      0,
+                    )}
+                  />
+                ),
               }}
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              updateSubjectGoal={updateSubjectGoal}
-            />
-
-            {/* Weekly View */}
-            <WeeklyView
-              weekDates={getWeekDates(selectedDate)}
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              getDayTasks={(date) => tasks[date] || []}
-              getDayStats={(date) => {
-                const dayTasks = tasks[date] || [];
-                const total = dayTasks.length;
-                const completed = dayTasks.filter((t) => t.completed).length;
-                const percentage =
-                  total > 0 ? Math.round((completed / total) * 100) : 0;
-                return { total, completed, percentage };
-              }}
-              subjects={subjects}
-            />
-
-            {/* Weekly Progress Chart */}
-            <WeeklyProgressLineChart
-              weekDates={getWeekDates(selectedDate)}
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              getDayStats={(date) => {
-                const dayTasks = tasks[date] || [];
-                const total = dayTasks.length;
-                const completed = dayTasks.filter((t) => t.completed).length;
-                const percentage =
-                  total > 0 ? Math.round((completed / total) * 100) : 0;
-                return { total, completed, percentage };
-              }}
-            />
-
-            {/* Day Schedule */}
-            <DaySchedule
-              date={selectedDate}
-              tasks={(tasks[selectedDate] || []).map((t) => ({
-                ...t,
-                done: t.completed,
-                subject:
-                  subjects.find((s) => s.id === t.subject_id)?.name || "",
-                subject_id: t.subject_id, // ← already there via ...t spread, so you're fine
-              }))}
-              subjects={subjects}
-              addTask={(date, subject, topic) => {
-                const subjectObj = subjects.find((s) => s.name === subject);
-                if (subjectObj) addTask(date, subjectObj.id, topic);
-              }}
-              toggleTask={(date, taskId) => toggleTask(taskId, date)}
-              removeTask={(date, taskId) => deleteTask(taskId, date)}
-              updateTask={(date, taskId, updates) =>
-                updateTask(taskId, date, updates)
-              }
-              getDayTasks={(date) =>
-                (tasks[date] || []).map((t) => ({
-                  ...t,
-                  done: t.completed,
-                  subject:
-                    subjects.find((s) => s.id === t.subject_id)?.name || "",
-                }))
-              }
-              updateTaskFocusSession={() => {}}
-              incrementTaskFocusSession={() => {}}
-              logFocusSession={logFocusSession}
-            />
-
-            {/* Monthly Progress Chart */}
-            <MonthlyProgressLineChart
-              dailyData={getMonthDailyData(selectedDate, tasks)}
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-            />
-
-            {/* Monthly Bar Chart */}
-            <MonthlyChart
-              dailyData={getMonthDailyData(selectedDate, tasks)}
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-            />
-
-            {/* Focus Session Report */}
-            <FocusSessionReport
-              sessions={(focusSessions[selectedDate] || []).map((s) => ({
-                ...s,
-                subject:
-                  subjects.find((sub) => sub.id === s.subject_id)?.name ||
-                  "Unknown",
-                subjectColor:
-                  subjects.find((sub) => sub.id === s.subject_id)?.color ||
-                  "#6366f1",
-                taskTopic:
-                  tasks[selectedDate]?.find((t) => t.id === s.task_id)?.topic ||
-                  "",
-                startTime: s.start_time,
-                endTime: s.end_time,
-                durationMinutes: s.duration_minutes,
-              }))}
-              totalMinutes={(focusSessions[selectedDate] || []).reduce(
-                (sum, s) => sum + (s.duration_minutes || 0),
-                0,
-              )}
             />
           </div>
         </main>
