@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130 130" width="130" height="130">
+  <defs>
+    <linearGradient id="g5a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#818CF8"/>
+      <stop offset="50%" style="stop-color:#6366F1"/>
+      <stop offset="100%" style="stop-color:#EC4899"/>
+    </linearGradient>
+    <linearGradient id="g5card" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E1B4B"/>
+      <stop offset="100%" style="stop-color:#312E81"/>
+    </linearGradient>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366F1"/>
+      <stop offset="100%" style="stop-color:#EC4899"/>
+    </linearGradient>
+    <filter id="shadow5a">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#1E1B4B" flood-opacity="0.3"/>
+    </filter>
+    <filter id="glow5">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow5soft">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+  </defs>
+
+  <!-- Shadow card behind -->
+  <rect x="8" y="12" width="100" height="100" rx="18" fill="#312E81" opacity="0.08" transform="translate(4, 4)"/>
+
+  <!-- Main card -->
+  <g filter="url(#shadow5a)">
+    <rect x="4" y="4" width="106" height="106" rx="18" fill="url(#g5card)"/>
+  </g>
+
+  <!-- Inner glow -->
+  <circle cx="57" cy="50" r="35" fill="#818CF8" filter="url(#glow5soft)" opacity="0.1"/>
+
+  <g transform="translate(13, 10)">
+    <!-- Ring track -->
+    <circle cx="44" cy="50" r="32" fill="none" stroke="#312E81" stroke-width="6" opacity="0.5"/>
+
+    <!-- Progress arc -->
+    <path d="M44 18 A32 32 0 1 1 17 72" fill="none" stroke="url(#g5a)" stroke-width="6.5" stroke-linecap="round" filter="url(#glow5)">
+      <animate attributeName="stroke-dasharray" from="0 250" to="160 250" dur="1.5s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
+    </path>
+
+    <!-- End dot -->
+    <circle cx="17" cy="72" r="4.5" fill="#EC4899" opacity="0">
+      <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="1.4s" fill="freeze"/>
+    </circle>
+    <circle cx="17" cy="72" r="4.5" fill="#EC4899" opacity="0">
+      <animate attributeName="r" values="4.5;10;4.5" dur="2.5s" begin="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0;0.3" dur="2.5s" begin="1.5s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Start dot -->
+    <circle cx="44" cy="18" r="3.5" fill="#818CF8" opacity="0.8"/>
+
+    <!-- Bars inside circle -->
+    <rect x="30" y="52" width="6" height="16" rx="3" fill="#818CF8" opacity="0.6"/>
+    <rect x="41" y="44" width="6" height="24" rx="3" fill="#818CF8"/>
+    <rect x="52" y="36" width="6" height="32" rx="3" fill="url(#grad1)"/>
+  </g>
+</svg>

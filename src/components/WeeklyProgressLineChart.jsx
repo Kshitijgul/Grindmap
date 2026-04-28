@@ -63,7 +63,7 @@ export default function WeeklyProgressLineChart({ weekDates, getDayStats, select
                   fontSize="9"
                   fill={isSelected ? '#c7d2fe' : '#6b7280'}
                 >
-                  {DAY_NAMES[i]}
+               {['SUN','MON','TUE','WED','THU','FRI','SAT'][new Date(point.date + 'T00:00:00').getDay()]}
                 </text>
               </g>
             );

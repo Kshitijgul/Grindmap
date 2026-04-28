@@ -1,4 +1,4 @@
-import { DAY_NAMES } from '../utils/calender';
+// import { DAY_NAMES } from '../utils/calender';
 
 export default function WeeklyView({ weekDates, selectedDate, setSelectedDate, getDayTasks, getDayStats, subjects }) {
   // Guard: don't render until weekDates is ready
@@ -74,7 +74,7 @@ export default function WeeklyView({ weekDates, selectedDate, setSelectedDate, g
                 <span className={`text-[10px] font-semibold uppercase tracking-wider ${
                   isToday ? 'text-indigo-400' : 'text-gray-500'
                 }`}>
-                  {DAY_NAMES[i]}
+               {['SUN','MON','TUE','WED','THU','FRI','SAT'][new Date(dateStr + 'T00:00:00').getDay()]}
                 </span>
                 <span className={`text-sm font-bold ${
                   isToday
