@@ -16,6 +16,9 @@ import DailyRoutine from "../components/DailyRoutine";
 import DraggableDashboard from "../components/DraggableDashboard";
 import SettingsModal from "../components/SettingsModal";
 import { useTheme } from "../context/ThemeContext";
+import NavLogo3 from "../components/NavLogo3";
+import GrindMapLogo from "../components/GrindMapLogo";
+import { Link } from "react-router-dom";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -31,7 +34,7 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
   const [subjects, setSubjects] = useState([]);
   const [tasks, setTasks] = useState({});
@@ -61,13 +64,18 @@ export default function Dashboard() {
       const rangeEndStr = rangeEnd.toISOString().split("T")[0];
 
       const { data: subjectsData, error: subjectsError } = await supabase
-        .from("subjects").select("*").eq("user_id", user.id);
+        .from("subjects")
+        .select("*")
+        .eq("user_id", user.id);
       if (subjectsError) throw subjectsError;
       setSubjects(subjectsData || []);
 
       const { data: tasksData, error: tasksError } = await supabase
-        .from("tasks").select("*").eq("user_id", user.id)
-        .gte("date", rangeStartStr).lt("date", rangeEndStr);
+        .from("tasks")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("date", rangeStartStr)
+        .lt("date", rangeEndStr);
       if (tasksError) throw tasksError;
       const tasksByDate = {};
       (tasksData || []).forEach((task) => {
@@ -77,15 +85,22 @@ export default function Dashboard() {
       setTasks(tasksByDate);
 
       const { data: goalsData, error: goalsError } = await supabase
-        .from("subject_goals").select("*").eq("user_id", user.id);
+        .from("subject_goals")
+        .select("*")
+        .eq("user_id", user.id);
       if (goalsError) throw goalsError;
       const goalsBySubject = {};
-      (goalsData || []).forEach((goal) => { goalsBySubject[goal.subject_id] = goal; });
+      (goalsData || []).forEach((goal) => {
+        goalsBySubject[goal.subject_id] = goal;
+      });
       setSubjectGoals(goalsBySubject);
 
       const { data: sessionsData, error: sessionsError } = await supabase
-        .from("focus_sessions").select("*").eq("user_id", user.id)
-        .gte("date", rangeStartStr).lt("date", rangeEndStr);
+        .from("focus_sessions")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("date", rangeStartStr)
+        .lt("date", rangeEndStr);
       if (sessionsError) throw sessionsError;
       const sessionsByDate = {};
       (sessionsData || []).forEach((session) => {
@@ -102,33 +117,56 @@ export default function Dashboard() {
     }
   }
 
-  async function handleSignOut() { await signOut(); navigate("/"); }
+  async function handleSignOut() {
+    await signOut();
+    navigate("/");
+  }
 
   async function addSubject(name, color) {
-    const { data, error } = await supabase.from("subjects")
-      .insert([{ user_id: user.id, name, color }]).select().single();
+    const { data, error } = await supabase
+      .from("subjects")
+      .insert([{ user_id: user.id, name, color }])
+      .select()
+      .single();
     if (error) throw error;
     setSubjects([...subjects, data]);
   }
 
   async function updateSubject(id, updates) {
-    const { error } = await supabase.from("subjects").update(updates)
-      .eq("id", id).eq("user_id", user.id);
+    const { error } = await supabase
+      .from("subjects")
+      .update(updates)
+      .eq("id", id)
+      .eq("user_id", user.id);
     if (error) throw error;
-    setSubjects(subjects.map((s) => s.id === id ? { ...s, ...updates } : s));
+    setSubjects(subjects.map((s) => (s.id === id ? { ...s, ...updates } : s)));
   }
 
   async function deleteSubject(id) {
-    const { error } = await supabase.from("subjects").delete()
-      .eq("id", id).eq("user_id", user.id);
+    const { error } = await supabase
+      .from("subjects")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
     if (error) throw error;
     setSubjects(subjects.filter((s) => s.id !== id));
   }
 
   async function addTask(date, subjectId, topic, goal = 1) {
-    const { data, error } = await supabase.from("tasks")
-      .insert([{ user_id: user.id, date, subject_id: subjectId, topic, goal, completed: false }])
-      .select().single();
+    const { data, error } = await supabase
+      .from("tasks")
+      .insert([
+        {
+          user_id: user.id,
+          date,
+          subject_id: subjectId,
+          topic,
+          goal,
+          completed: false,
+        },
+      ])
+      .select()
+      .single();
     if (error) throw error;
     setTasks((prev) => ({ ...prev, [date]: [...(prev[date] || []), data] }));
   }
@@ -136,58 +174,113 @@ export default function Dashboard() {
   async function toggleTask(taskId, date) {
     const task = tasks[date]?.find((t) => t.id === taskId);
     if (!task) return;
-    const { error } = await supabase.from("tasks")
-      .update({ completed: !task.completed }).eq("id", taskId).eq("user_id", user.id);
+    const { error } = await supabase
+      .from("tasks")
+      .update({ completed: !task.completed })
+      .eq("id", taskId)
+      .eq("user_id", user.id);
     if (error) throw error;
     setTasks((prev) => ({
       ...prev,
-      [date]: prev[date].map((t) => t.id === taskId ? { ...t, completed: !t.completed } : t),
+      [date]: prev[date].map((t) =>
+        t.id === taskId ? { ...t, completed: !t.completed } : t,
+      ),
     }));
   }
 
   async function updateTask(taskId, date, updates) {
-    const { error } = await supabase.from("tasks").update(updates)
-      .eq("id", taskId).eq("user_id", user.id);
+    const { error } = await supabase
+      .from("tasks")
+      .update(updates)
+      .eq("id", taskId)
+      .eq("user_id", user.id);
     if (error) throw error;
     setTasks((prev) => ({
       ...prev,
-      [date]: prev[date].map((t) => t.id === taskId ? { ...t, ...updates } : t),
+      [date]: prev[date].map((t) =>
+        t.id === taskId ? { ...t, ...updates } : t,
+      ),
     }));
   }
 
   async function deleteTask(taskId, date) {
-    const { error } = await supabase.from("tasks").delete()
-      .eq("id", taskId).eq("user_id", user.id);
+    const { error } = await supabase
+      .from("tasks")
+      .delete()
+      .eq("id", taskId)
+      .eq("user_id", user.id);
     if (error) throw error;
-    setTasks((prev) => ({ ...prev, [date]: prev[date].filter((t) => t.id !== taskId) }));
+    setTasks((prev) => ({
+      ...prev,
+      [date]: prev[date].filter((t) => t.id !== taskId),
+    }));
   }
 
   async function updateSubjectGoal(subjectId, goal, startDate, endDate) {
     const existing = subjectGoals[subjectId];
     if (existing) {
-      const { error } = await supabase.from("subject_goals")
+      const { error } = await supabase
+        .from("subject_goals")
         .update({ goal, start_date: startDate, end_date: endDate })
-        .eq("id", existing.id).eq("user_id", user.id);
+        .eq("id", existing.id)
+        .eq("user_id", user.id);
       if (error) throw error;
       setSubjectGoals((prev) => ({
         ...prev,
-        [subjectId]: { ...prev[subjectId], goal, start_date: startDate, end_date: endDate },
+        [subjectId]: {
+          ...prev[subjectId],
+          goal,
+          start_date: startDate,
+          end_date: endDate,
+        },
       }));
     } else {
-      const { data, error } = await supabase.from("subject_goals")
-        .insert([{ user_id: user.id, subject_id: subjectId, goal, start_date: startDate, end_date: endDate }])
-        .select().single();
+      const { data, error } = await supabase
+        .from("subject_goals")
+        .insert([
+          {
+            user_id: user.id,
+            subject_id: subjectId,
+            goal,
+            start_date: startDate,
+            end_date: endDate,
+          },
+        ])
+        .select()
+        .single();
       if (error) throw error;
       setSubjectGoals((prev) => ({ ...prev, [subjectId]: data }));
     }
   }
 
-  async function logFocusSession(date, taskId, subjectId, durationMinutes, startTime, endTime) {
-    const { data, error } = await supabase.from("focus_sessions")
-      .insert([{ user_id: user.id, date, task_id: taskId, subject_id: subjectId, duration_minutes: durationMinutes, start_time: startTime, end_time: endTime }])
-      .select().single();
+  async function logFocusSession(
+    date,
+    taskId,
+    subjectId,
+    durationMinutes,
+    startTime,
+    endTime,
+  ) {
+    const { data, error } = await supabase
+      .from("focus_sessions")
+      .insert([
+        {
+          user_id: user.id,
+          date,
+          task_id: taskId,
+          subject_id: subjectId,
+          duration_minutes: durationMinutes,
+          start_time: startTime,
+          end_time: endTime,
+        },
+      ])
+      .select()
+      .single();
     if (error) throw error;
-    setFocusSessions((prev) => ({ ...prev, [date]: [...(prev[date] || []), data] }));
+    setFocusSessions((prev) => ({
+      ...prev,
+      [date]: [...(prev[date] || []), data],
+    }));
   }
 
   function getWeekDates(dateStr) {
@@ -213,7 +306,13 @@ export default function Dashboard() {
       const dayTasks = tasks[d] || [];
       const total = dayTasks.length;
       const completed = dayTasks.filter((t) => t.completed).length;
-      return { date: d, day, total, completed, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
+      return {
+        date: d,
+        day,
+        total,
+        completed,
+        percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
+      };
     });
   }
 
@@ -222,25 +321,35 @@ export default function Dashboard() {
     const year = date.getFullYear();
     const month = date.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    let total = 0, completed = 0;
+    let total = 0,
+      completed = 0;
     for (let day = 1; day <= daysInMonth; day++) {
       const d = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
       const dayTasks = tasks[d] || [];
       total += dayTasks.length;
       completed += dayTasks.filter((t) => t.completed).length;
     }
-    return { total, completed, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
+    return {
+      total,
+      completed,
+      percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
+    };
   }
 
   function getWeekStats(dateStr, tasks) {
     const weekDates = getWeekDates(dateStr);
-    let total = 0, completed = 0;
+    let total = 0,
+      completed = 0;
     weekDates.forEach((d) => {
       const dayTasks = tasks[d] || [];
       total += dayTasks.length;
       completed += dayTasks.filter((t) => t.completed).length;
     });
-    return { total, completed, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
+    return {
+      total,
+      completed,
+      percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
+    };
   }
 
   function getSubjectStats(dateStr, tasks, subjects) {
@@ -249,7 +358,9 @@ export default function Dashboard() {
     const month = date.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const stats = {};
-    subjects.forEach((s) => { stats[s.name] = { total: 0, completed: 0 }; });
+    subjects.forEach((s) => {
+      stats[s.name] = { total: 0, completed: 0 };
+    });
     for (let day = 1; day <= daysInMonth; day++) {
       const d = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
       (tasks[d] || []).forEach((task) => {
@@ -291,7 +402,9 @@ export default function Dashboard() {
           className="text-center"
         >
           <div className="w-12 h-12 border-4 border-lime-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500 dark:text-gray-400 text-sm">Loading your grind...</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            Loading your grind...
+          </p>
         </motion.div>
       </div>
     );
@@ -317,67 +430,106 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300 overflow-x-hidden">
       {/* Top Bar */}
-      <header className="h-14 border-b border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-gray-950/95 backdrop-blur-md sticky top-0 z-50 w-full">
-        <div className="h-full px-3 sm:px-4 lg:px-6 flex items-center justify-between max-w-[100vw]">
-          {/* Left */}
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="xl:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 flex-shrink-0"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+<header className="h-14 border-b border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-gray-950/95 backdrop-blur-md fixed top-0 z-50 w-full shadow-sm dark:shadow-none">
+  <div className="h-full px-3 sm:px-4 lg:px-6 flex items-center justify-between max-w-[100vw]">
+    {/* Left Side */}
+    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className="xl:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 flex-shrink-0"
+      >
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+      </button>
 
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <div className="w-8 h-8 bg-lime-400 rounded-xl flex items-center justify-center shadow-lg shadow-lime-400/30">
-                <span className="text-gray-950 font-black text-lg">G</span>
-              </div>
-              <span className="font-black text-xl tracking-tighter text-gray-900 dark:text-white hidden sm:block">
-                GRIND<span className="text-lime-400">MAP</span>
-              </span>
-            </div>
-          </div>
-
-          {/* Right Side */}
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-            <span className="hidden lg:block text-sm text-gray-500 dark:text-gray-400 truncate max-w-[180px]">
-              {user?.email}
-            </span>
-
-            <button
-              onClick={() => setRightPanelOpen(true)}
-              className="xl:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </button>
-
-            <button
-              onClick={() => setShowSettings(true)}
-              className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center text-lg"
-            >
-              ⚙️
-            </button>
-
-            <button
-              onClick={toggleTheme}
-              className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center text-lg"
-            >
-              {isDark ? "☀️" : "🌙"}
-            </button>
-
-            <button
-              onClick={handleSignOut}
-              className="hidden sm:block px-4 py-1.5 text-sm font-medium rounded-xl border border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-500/50 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-            >
-              Sign out
-            </button>
-          </div>
+      {/* Responsive Logo */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Mobile: Icon Only (NavLogo3) */}
+        <div className="block sm:hidden">
+          <NavLogo3 size={32} />
         </div>
-      </header>
+        {/* Desktop: Icon + Text (GrindMapLogo) */}
+        <div className="hidden sm:block">
+          <GrindMapLogo size="default" />
+        </div>
+      </div>
+    </div>
+
+    {/* Right Side */}
+    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+      <span className="hidden lg:block text-sm text-gray-500 dark:text-gray-400 truncate max-w-[180px]">
+        {user?.email}
+      </span>
+
+      <button
+        onClick={() => setRightPanelOpen(true)}
+        className="xl:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
+      >
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+          />
+        </svg>
+      </button>
+
+      <button
+        onClick={() => setShowSettings(true)}
+        className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center text-lg"
+      >
+        ⚙️
+      </button>
+
+      <button
+        onClick={toggleTheme}
+        className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center text-lg"
+      >
+        {isDark ? "☀️" : "🌙"}
+      </button>
+
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={handleSignOut}
+        className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm font-semibold rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-200 dark:hover:border-red-800/50 hover:text-red-600 dark:hover:text-red-400 transition-all shadow-sm dark:shadow-none"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+          stroke="currentColor"
+          className="w-4 h-4"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
+          />
+        </svg>
+        <span className="hidden sm:inline">Sign out</span>
+      </motion.button>
+    </div>
+  </div>
+</header>
 
       <div className="flex w-full min-w-0">
         {/* Sidebar */}
@@ -395,7 +547,7 @@ export default function Dashboard() {
         />
 
         {/* Main Content - Fixed overflow issues here */}
-        <main className="flex-1 min-w-0 min-h-[calc(100vh-3.5rem)] xl:ml-72 xl:mr-80 transition-all duration-300 p-3 sm:p-5 lg:p-6 w-full">
+        <main className="mt-12 flex-1 min-w-0 min-h-[calc(100vh-3.5rem)] xl:ml-72 xl:mr-80 transition-all duration-300 p-3 sm:p-5 lg:p-6 w-full">
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -412,29 +564,60 @@ export default function Dashboard() {
                       endDate: subjectGoals[s.id]?.end_date || null,
                       goal: subjectGoals[s.id]?.goal || null,
                     }))}
-                    getSubjectTimelineStats={(subjectId, startDate, endDate) => {
+                    getSubjectTimelineStats={(
+                      subjectId,
+                      startDate,
+                      endDate,
+                    ) => {
                       if (!startDate || !endDate)
-                        return { total: 0, completed: 0, percentage: 0, daysCompleted: 0, daysPassed: 0, daysRemaining: 0 };
+                        return {
+                          total: 0,
+                          completed: 0,
+                          percentage: 0,
+                          daysCompleted: 0,
+                          daysPassed: 0,
+                          daysRemaining: 0,
+                        };
                       const start = new Date(startDate + "T00:00:00");
                       const end = new Date(endDate + "T00:00:00");
                       const today = new Date();
                       today.setHours(0, 0, 0, 0);
-                      let total = 0, completed = 0, daysCompleted = 0, daysPassed = 0;
+                      let total = 0,
+                        completed = 0,
+                        daysCompleted = 0,
+                        daysPassed = 0;
                       const cursor = new Date(start);
                       while (cursor <= end) {
                         const d = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
-                        const dayTasks = (tasks[d] || []).filter((t) => t.subject_id === subjectId);
+                        const dayTasks = (tasks[d] || []).filter(
+                          (t) => t.subject_id === subjectId,
+                        );
                         if (cursor <= today) {
                           daysPassed++;
-                          if (dayTasks.length > 0 && dayTasks.every((t) => t.completed)) daysCompleted++;
+                          if (
+                            dayTasks.length > 0 &&
+                            dayTasks.every((t) => t.completed)
+                          )
+                            daysCompleted++;
                         }
                         total += dayTasks.length;
                         completed += dayTasks.filter((t) => t.completed).length;
                         cursor.setDate(cursor.getDate() + 1);
                       }
-                      const daysRemaining = Math.max(0, Math.ceil((end - today) / (1000 * 60 * 60 * 24)));
-                      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-                      return { total, completed, percentage, daysCompleted, daysPassed, daysRemaining };
+                      const daysRemaining = Math.max(
+                        0,
+                        Math.ceil((end - today) / (1000 * 60 * 60 * 24)),
+                      );
+                      const percentage =
+                        total > 0 ? Math.round((completed / total) * 100) : 0;
+                      return {
+                        total,
+                        completed,
+                        percentage,
+                        daysCompleted,
+                        daysPassed,
+                        daysRemaining,
+                      };
                     }}
                     selectedDate={selectedDate}
                     setSelectedDate={setSelectedDate}
@@ -450,8 +633,15 @@ export default function Dashboard() {
                     getDayStats={(date) => {
                       const dayTasks = tasks[date] || [];
                       const total = dayTasks.length;
-                      const completed = dayTasks.filter((t) => t.completed).length;
-                      return { total, completed, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
+                      const completed = dayTasks.filter(
+                        (t) => t.completed,
+                      ).length;
+                      return {
+                        total,
+                        completed,
+                        percentage:
+                          total > 0 ? Math.round((completed / total) * 100) : 0,
+                      };
                     }}
                     subjects={subjects}
                   />
@@ -464,8 +654,15 @@ export default function Dashboard() {
                     getDayStats={(date) => {
                       const dayTasks = tasks[date] || [];
                       const total = dayTasks.length;
-                      const completed = dayTasks.filter((t) => t.completed).length;
-                      return { total, completed, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
+                      const completed = dayTasks.filter(
+                        (t) => t.completed,
+                      ).length;
+                      return {
+                        total,
+                        completed,
+                        percentage:
+                          total > 0 ? Math.round((completed / total) * 100) : 0,
+                      };
                     }}
                   />
                 ),
@@ -475,22 +672,29 @@ export default function Dashboard() {
                     tasks={(tasks[selectedDate] || []).map((t) => ({
                       ...t,
                       done: t.completed,
-                      subject: subjects.find((s) => s.id === t.subject_id)?.name || "",
+                      subject:
+                        subjects.find((s) => s.id === t.subject_id)?.name || "",
                       subject_id: t.subject_id,
                     }))}
                     subjects={subjects}
                     addTask={(date, subject, topic) => {
-                      const subjectObj = subjects.find((s) => s.name === subject);
+                      const subjectObj = subjects.find(
+                        (s) => s.name === subject,
+                      );
                       if (subjectObj) addTask(date, subjectObj.id, topic);
                     }}
                     toggleTask={(date, taskId) => toggleTask(taskId, date)}
                     removeTask={(date, taskId) => deleteTask(taskId, date)}
-                    updateTask={(date, taskId, updates) => updateTask(taskId, date, updates)}
+                    updateTask={(date, taskId, updates) =>
+                      updateTask(taskId, date, updates)
+                    }
                     getDayTasks={(date) =>
                       (tasks[date] || []).map((t) => ({
                         ...t,
                         done: t.completed,
-                        subject: subjects.find((s) => s.id === t.subject_id)?.name || "",
+                        subject:
+                          subjects.find((s) => s.id === t.subject_id)?.name ||
+                          "",
                       }))
                     }
                     updateTaskFocusSession={() => {}}
@@ -516,15 +720,22 @@ export default function Dashboard() {
                   <FocusSessionReport
                     sessions={(focusSessions[selectedDate] || []).map((s) => ({
                       ...s,
-                      subject: subjects.find((sub) => sub.id === s.subject_id)?.name || "Unknown",
-                      subjectColor: subjects.find((sub) => sub.id === s.subject_id)?.color || "#6366f1",
-                      taskTopic: tasks[selectedDate]?.find((t) => t.id === s.task_id)?.topic || "",
+                      subject:
+                        subjects.find((sub) => sub.id === s.subject_id)?.name ||
+                        "Unknown",
+                      subjectColor:
+                        subjects.find((sub) => sub.id === s.subject_id)
+                          ?.color || "#6366f1",
+                      taskTopic:
+                        tasks[selectedDate]?.find((t) => t.id === s.task_id)
+                          ?.topic || "",
                       startTime: s.start_time,
                       endTime: s.end_time,
                       durationMinutes: s.duration_minutes,
                     }))}
                     totalMinutes={(focusSessions[selectedDate] || []).reduce(
-                      (sum, s) => sum + (s.duration_minutes || 0), 0
+                      (sum, s) => sum + (s.duration_minutes || 0),
+                      0,
                     )}
                   />
                 ),
@@ -575,7 +786,9 @@ export default function Dashboard() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+        {showSettings && (
+          <SettingsModal onClose={() => setShowSettings(false)} />
+        )}
       </AnimatePresence>
     </div>
   );

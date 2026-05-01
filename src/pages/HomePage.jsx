@@ -1,4 +1,10 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
+// import Logo from "/public/logos/grindmap-nav.svg";
+// import WebLogo from "../assets/Web_Logo.svg";
+// import { ReactComponent as Logo } from "../assets/Web_Logo.svg";
+// import Logo from "../assets/Web_Logo.svg";
+import Logo from '../components/NavLogo'; // Update path as needed
+import GrindMapLogo from "../components/GrindMapLogo";
 
 export default function HomePage() {
   return (
@@ -8,15 +14,13 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-lime-400 rounded-lg flex items-center justify-center">
-                <span className="text-gray-950 font-bold text-sm">A</span>
-              </div>
-              <span className="font-bold text-lg">
-                <span className="text-white">GRIND</span>{' '}
-                <span className="text-lime-400">MAP</span>
-              </span>
-            </Link>
+            {/* <Logo to="/" size="md" /> */}
+            {/* <Link to="/" className="flex items-center gap-2">
+              <img src={Logo} alt="GrindMap Logo" className="h-8 w-auto" />
+            </Link> */}
+            <Link to="/" className="flex items-center gap-2 no-underline">
+        <GrindMapLogo size="default" />
+      </Link>
 
             {/* Nav Buttons */}
             <div className="flex items-center gap-3">
@@ -47,15 +51,15 @@ export default function HomePage() {
             </p>
 
             <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
-              Map your{' '}
-              <span className="text-lime-400">grind.</span>
+              Map your <span className="text-lime-400">grind.</span>
               <br />
               Own the outcome.
             </h1>
 
             <p className="text-gray-400 text-lg leading-relaxed max-w-md">
-              Track sessions, build streaks, and see every hour compound into real progress.
-              Built for students who don't just study — they execute.
+              Track sessions, build streaks, and see every hour compound into
+              real progress. Built for students who don't just study — they
+              execute.
             </p>
 
             {/* Features List */}
@@ -108,19 +112,22 @@ export default function HomePage() {
           <div className="space-y-3">
             <h3 className="text-white font-semibold">Fast onboarding</h3>
             <p className="text-gray-400 text-sm">
-              Sign up in seconds with email. Your study plan is ready before you close the tab.
+              Sign up in seconds with email. Your study plan is ready before you
+              close the tab.
             </p>
           </div>
           <div className="space-y-3">
             <h3 className="text-white font-semibold">Personal dashboard</h3>
             <p className="text-gray-400 text-sm">
-              After login, see your streak, today's tasks, and progress across every subject you're tracking.
+              After login, see your streak, today's tasks, and progress across
+              every subject you're tracking.
             </p>
           </div>
           <div className="space-y-3">
             <h3 className="text-white font-semibold">Works everywhere</h3>
             <p className="text-gray-400 text-sm">
-              Designed to look sharp on any device. Track your grind on desktop, tablet, or mobile.
+              Designed to look sharp on any device. Track your grind on desktop,
+              tablet, or mobile.
             </p>
           </div>
         </div>
@@ -157,13 +164,13 @@ function AuthCard() {
         <div className="grid grid-cols-2 gap-3">
           <button className="py-2.5 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-400 text-sm font-medium flex items-center justify-center gap-2 opacity-50 cursor-not-allowed">
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
             </svg>
             Google
           </button>
           <button className="py-2.5 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-400 text-sm font-medium flex items-center justify-center gap-2 opacity-50 cursor-not-allowed">
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-6.225 0-1.38.45-2.535 1.185-3.435.225.585.99 1.005 1.98 1.005 1.395 0 2.58-.465 3.465-1.155.09.675.285 1.29.57 1.845-3.375.15-6.285-1.74-6.285-4.845 0-1.065.3-2.07.825-2.925 1.545 1.905 3.855 3.15 6.435 3.285-.075-.345-.15-.705-.15-1.08 0-2.61 2.115-4.725 4.725-4.725 1.365 0 2.595.57 3.465 1.485 1.08-.21 2.085-.6 3.015-1.155-.36 1.11-1.11 2.04-2.085 2.64.96-.105 1.875-.36 2.745-.72-.63.945-1.44 1.77-2.355 2.415z"/>
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-6.225 0-1.38.45-2.535 1.185-3.435.225.585.99 1.005 1.98 1.005 1.395 0 2.58-.465 3.465-1.155.09.675.285 1.29.57 1.845-3.375.15-6.285-1.74-6.285-4.845 0-1.065.3-2.07.825-2.925 1.545 1.905 3.855 3.15 6.435 3.285-.075-.345-.15-.705-.15-1.08 0-2.61 2.115-4.725 4.725-4.725 1.365 0 2.595.57 3.465 1.485 1.08-.21 2.085-.6 3.015-1.155-.36 1.11-1.11 2.04-2.085 2.64.96-.105 1.875-.36 2.745-.72-.63.945-1.44 1.77-2.355 2.415z" />
             </svg>
             GitHub
           </button>
@@ -175,14 +182,18 @@ function AuthCard() {
             <div className="w-full border-t border-gray-800"></div>
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="px-2 bg-gray-900 text-gray-500">or continue with email</span>
+            <span className="px-2 bg-gray-900 text-gray-500">
+              or continue with email
+            </span>
           </div>
         </div>
 
         {/* Email Form */}
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1">EMAIL</label>
+            <label className="block text-xs font-medium text-gray-400 mb-1">
+              EMAIL
+            </label>
             <input
               type="email"
               placeholder="you@example.com"
@@ -190,7 +201,9 @@ function AuthCard() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1">PASSWORD</label>
+            <label className="block text-xs font-medium text-gray-400 mb-1">
+              PASSWORD
+            </label>
             <input
               type="password"
               placeholder="••••••••"
@@ -206,7 +219,7 @@ function AuthCard() {
           </Link>
 
           <p className="text-center text-sm text-gray-500">
-            No account?{' '}
+            No account?{" "}
             <Link to="/register" className="text-lime-400 hover:underline">
               Create one free
             </Link>
@@ -221,13 +234,20 @@ function AuthCard() {
             </div>
             <div>
               <p className="text-sm text-gray-400">
-                Once logged in, you'll see your <span className="text-lime-400">study dashboard</span> —
+                Once logged in, you'll see your{" "}
+                <span className="text-lime-400">study dashboard</span> —
                 streaks, heatmap, and today's plan.
               </p>
               <div className="flex gap-2 mt-2">
-                <span className="px-2 py-1 bg-gray-800 rounded text-xs text-gray-500">Streak tracker</span>
-                <span className="px-2 py-1 bg-gray-800 rounded text-xs text-gray-500">Progress heatmap</span>
-                <span className="px-2 py-1 bg-gray-800 rounded text-xs text-gray-500">Goal setting</span>
+                <span className="px-2 py-1 bg-gray-800 rounded text-xs text-gray-500">
+                  Streak tracker
+                </span>
+                <span className="px-2 py-1 bg-gray-800 rounded text-xs text-gray-500">
+                  Progress heatmap
+                </span>
+                <span className="px-2 py-1 bg-gray-800 rounded text-xs text-gray-500">
+                  Goal setting
+                </span>
               </div>
             </div>
           </div>
