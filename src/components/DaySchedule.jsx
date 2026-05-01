@@ -1,33 +1,47 @@
-import { useState, useEffect } from 'react';
-import { DAY_NAMES, MONTH_NAMES } from '../utils/calender';
-import FocusTimer from './FocusTimer';
+import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { DAY_NAMES, MONTH_NAMES } from "../utils/calender";
+import FocusTimer from "./FocusTimer";
 
-export default function DaySchedule({ date, tasks, subjects, addTask, toggleTask, removeTask, updateTask, getDayTasks, updateTaskFocusSession, incrementTaskFocusSession, logFocusSession }) {
-  const [selectedSubject, setSelectedSubject] = useState(subjects[0]?.name || '');
-  const [topic, setTopic] = useState('');
+export default function DaySchedule({
+  date,
+  tasks,
+  subjects,
+  addTask,
+  toggleTask,
+  removeTask,
+  updateTask,
+  getDayTasks,
+  updateTaskFocusSession,
+  incrementTaskFocusSession,
+  logFocusSession,
+}) {
+  const [selectedSubject, setSelectedSubject] = useState(subjects[0]?.name || "");
+  const [topic, setTopic] = useState("");
   const [editingTask, setEditingTask] = useState(null);
-  const [editTopic, setEditTopic] = useState('');
+  const [editTopic, setEditTopic] = useState("");
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [focusTimerTask, setFocusTimerTask] = useState(null);
 
-  // ← KEY FIX: sync selectedSubject when subjects load after mount
   useEffect(() => {
     if (subjects.length > 0 && !selectedSubject) {
       setSelectedSubject(subjects[0].name);
     }
-  }, [subjects]);
+  }, [subjects, selectedSubject]);
 
-  const d = new Date(date + 'T00:00:00');
+  const d = new Date(`${date}T00:00:00`);
   const dayName = DAY_NAMES[d.getDay()];
   const monthName = MONTH_NAMES[d.getMonth()];
   const dayNum = d.getDate();
   const year = d.getFullYear();
 
   const today = new Date();
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(
+    today.getDate()
+  ).padStart(2, "0")}`;
   const isToday = date === todayStr;
 
-  const completedCount = tasks.filter(t => t.done).length;
+  const completedCount = tasks.filter((t) => t.done).length;
   const totalCount = tasks.length;
   const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
@@ -36,12 +50,10 @@ export default function DaySchedule({ date, tasks, subjects, addTask, toggleTask
     const subjectToUse = selectedSubject || subjects[0]?.name;
     if (!subjectToUse) return;
     addTask(date, subjectToUse, topic.trim());
-    setTopic('');
+    setTopic("");
   };
 
-  const getSubjectColor = (name) => {
-    return subjects.find(s => s.name === name)?.color || '#6366f1';
-  };
+  const getSubjectColor = (name) => subjects.find((s) => s.name === name)?.color || "#6366f1";
 
   const startEdit = (task) => {
     setEditingTask(task.id);
@@ -56,82 +68,104 @@ export default function DaySchedule({ date, tasks, subjects, addTask, toggleTask
   };
 
   const copyFromYesterday = () => {
-    const yesterday = new Date(date + 'T00:00:00');
+    const yesterday = new Date(`${date}T00:00:00`);
     yesterday.setDate(yesterday.getDate() - 1);
-    const ydStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+    const ydStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(
+      yesterday.getDate()
+    ).padStart(2, "0")}`;
     const yTasks = getDayTasks(ydStr);
-    yTasks.forEach(t => {
-      addTask(date, t.subject, t.topic);
-    });
+    yTasks.forEach((t) => addTask(date, t.subject, t.topic));
   };
 
   const quickTemplates = [
-    { subject: 'Linear Algebra', topic: 'Lecture - Eigenvalues & Eigenvectors' },
-    { subject: 'Digital Logic', topic: 'Practice - K-Map Problems' },
-    { subject: 'Data Structures', topic: 'Implement - Binary Search Tree' },
-    { subject: 'Operating Systems', topic: 'Notes - Process Scheduling' },
-    { subject: 'Computer Networks', topic: 'Revision - TCP/IP Model' },
+    { subject: "Linear Algebra", topic: "Lecture - Eigenvalues & Eigenvectors" },
+    { subject: "Digital Logic", topic: "Practice - K-Map Problems" },
+    { subject: "Data Structures", topic: "Implement - Binary Search Tree" },
+    { subject: "Operating Systems", topic: "Notes - Process Scheduling" },
+    { subject: "Computer Networks", topic: "Revision - TCP/IP Model" },
   ];
 
+  const filteredTemplates = quickTemplates.filter((qt) => subjects.some((s) => s.name === qt.subject));
+
   return (
-    <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-      {/* Day Header */}
-      <div className={`px-6 py-4 border-b border-gray-800 ${isToday ? 'bg-gradient-to-r from-indigo-900/40 to-purple-900/40' : 'bg-gray-900'}`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3">
+    <motion.section
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+    >
+      <div
+        className={`border-b border-slate-200 px-3 py-4 sm:px-5 lg:px-6 dark:border-slate-800 ${
+          isToday
+            ? "bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/35 dark:to-purple-900/35"
+            : "bg-slate-50 dark:bg-slate-900"
+        }`}
+      >
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               {isToday && (
-                <span className="bg-indigo-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
+                <span className="rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
                   Today
                 </span>
               )}
-              <h2 className="text-xl font-bold text-white">
+              <h2 className="text-base font-bold text-slate-900 sm:text-lg lg:text-xl dark:text-white">
                 {dayName}, {monthName} {dayNum}, {year}
               </h2>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            {totalCount > 0 && (
-              <>
-                <div className="text-right">
-                  <div className="text-xs text-gray-500">Completion</div>
-                  <div className={`text-lg font-bold ${pct === 100 ? 'text-green-400' : pct >= 50 ? 'text-yellow-400' : 'text-gray-400'}`}>
-                    {pct}%
-                  </div>
-                </div>
-                <div className="w-12 h-12">
-                  <svg viewBox="0 0 36 36" className="transform -rotate-90">
-                    <path
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none" stroke="#1f2937" strokeWidth="3"
-                    />
-                    <path
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke={pct === 100 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#6366f1'}
-                      strokeWidth="3"
-                      strokeDasharray={`${pct}, 100`}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </div>
-              </>
-            )}
-          </div>
+
+          {totalCount > 0 && (
+            <div className="flex items-center gap-3 self-start md:self-auto">
+              <div className="text-right">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Completion</p>
+                <p
+                  className={`text-lg font-bold ${
+                    pct === 100 ? "text-emerald-500" : pct >= 50 ? "text-amber-500" : "text-indigo-500"
+                  }`}
+                >
+                  {pct}%
+                </p>
+              </div>
+              <div className="h-11 w-11 shrink-0">
+                <svg viewBox="0 0 36 36" className="-rotate-90 transform">
+                  <path
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="currentColor"
+                    className="text-slate-200 dark:text-slate-800"
+                    strokeWidth="3"
+                  />
+                  <motion.path
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke={pct === 100 ? "#10b981" : pct >= 50 ? "#f59e0b" : "#6366f1"}
+                    strokeWidth="3"
+                    strokeDasharray={`${pct}, 100`}
+                    strokeLinecap="round"
+                    initial={{ strokeDasharray: "0, 100" }}
+                    animate={{ strokeDasharray: `${pct}, 100` }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </svg>
+              </div>
+            </div>
+          )}
         </div>
 
         {totalCount > 0 && (
           <div className="mt-3">
-            <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span>{completedCount} of {totalCount} tasks completed</span>
+            <div className="mb-1 flex justify-between text-xs text-slate-500 dark:text-slate-400">
+              <span>{completedCount} completed</span>
               <span>{totalCount - completedCount} remaining</span>
             </div>
-            <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-500"
+            <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+              <motion.div
+                className="h-full rounded-full"
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 0.45 }}
                 style={{
-                  width: `${pct}%`,
-                  background: pct === 100 ? '#10b981' : 'linear-gradient(90deg, #6366f1, #8b5cf6)'
+                  background: pct === 100 ? "#10b981" : "linear-gradient(90deg, #6366f1, #8b5cf6)",
                 }}
               />
             </div>
@@ -139,228 +173,221 @@ export default function DaySchedule({ date, tasks, subjects, addTask, toggleTask
         )}
       </div>
 
-      {/* Add Task Form */}
-      <div className="px-6 py-4 border-b border-gray-800 bg-gray-900/50">
-        <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
-          <div className="flex-shrink-0">
-            <label className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold block mb-1">Subject</label>
+      <div className="border-b border-slate-200 bg-slate-50/70 px-3 py-4 sm:px-5 lg:px-6 dark:border-slate-800 dark:bg-slate-950/30">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-[180px_1fr_auto] md:items-end">
+          <div>
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Subject
+            </label>
             <select
               value={selectedSubject}
-              onChange={e => setSelectedSubject(e.target.value)}
-              className="bg-gray-800 text-white text-sm px-3 py-2.5 rounded-lg border border-gray-700 focus:border-indigo-500 outline-none w-full sm:min-w-[160px]"
+              onChange={(e) => setSelectedSubject(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
             >
-              {subjects.length === 0 && (
-                <option value="">No subjects yet</option>
-              )}
-              {subjects.map(s => (
-                <option key={s.id} value={s.name}>{s.name}</option>
+              {subjects.length === 0 && <option value="">No subjects yet</option>}
+              {subjects.map((s) => (
+                <option key={s.id} value={s.name}>
+                  {s.name}
+                </option>
               ))}
             </select>
           </div>
-          <div className="flex-1">
-            <label className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold block mb-1">Topic / Lecture / Task</label>
+
+          <div>
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Topic / Lecture / Task
+            </label>
             <input
               value={topic}
-              onChange={e => setTopic(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleAdd()}
+              onChange={(e) => setTopic(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
               placeholder="e.g. Lecture 7 - Eigenvalues"
-              className="w-full bg-gray-800 text-white text-sm px-3 py-2.5 rounded-lg border border-gray-700 focus:border-indigo-500 outline-none placeholder-gray-600"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
             />
           </div>
+
           <button
             onClick={handleAdd}
             disabled={!topic.trim() || subjects.length === 0}
-            className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm px-5 py-2.5 rounded-lg font-semibold transition flex-shrink-0"
+            className="w-full rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-300 md:w-auto dark:disabled:bg-slate-700"
           >
-            + Add Task
+            Add Task
           </button>
         </div>
 
-        {/* Quick actions */}
-        <div className="flex flex-wrap gap-2 mt-3">
+        <div className="mt-3 flex flex-wrap gap-2">
           <button
             onClick={copyFromYesterday}
-            className="text-[10px] bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white px-3 py-1.5 rounded-lg transition font-medium border border-gray-700"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
           >
-            📋 Copy Yesterday's Plan
+            Copy Yesterday Plan
           </button>
           <button
-            onClick={() => setShowQuickAdd(!showQuickAdd)}
-            className="text-[10px] bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white px-3 py-1.5 rounded-lg transition font-medium border border-gray-700"
+            onClick={() => setShowQuickAdd((v) => !v)}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
           >
-            ⚡ Quick Templates
+            Quick Templates
           </button>
         </div>
 
-        {showQuickAdd && (
-          <div className="mt-2 bg-gray-800 rounded-lg border border-gray-700 p-2 space-y-1">
-            {quickTemplates
-              .filter(qt => subjects.some(s => s.name === qt.subject))
-              .map((qt, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    addTask(date, qt.subject, qt.topic);
-                    setShowQuickAdd(false);
-                  }}
-                  className="w-full text-left text-xs text-gray-300 hover:bg-gray-700 px-3 py-2 rounded flex items-center gap-2 transition"
-                >
-                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: getSubjectColor(qt.subject) }} />
-                  <span className="font-medium text-gray-400">{qt.subject}</span>
-                  <span className="text-gray-500">—</span>
-                  <span>{qt.topic}</span>
-                </button>
-              ))}
-            {quickTemplates.filter(qt => subjects.some(s => s.name === qt.subject)).length === 0 && (
-              <p className="text-xs text-gray-500 px-3 py-2">Add subjects from the sidebar first</p>
-            )}
-          </div>
-        )}
+        <AnimatePresence initial={false}>
+          {showQuickAdd && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="mt-2 overflow-hidden"
+            >
+              <div className="space-y-1 rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-800">
+                {filteredTemplates.map((qt) => (
+                  <button
+                    key={`${qt.subject}-${qt.topic}`}
+                    onClick={() => {
+                      addTask(date, qt.subject, qt.topic);
+                      setShowQuickAdd(false);
+                    }}
+                    className="flex w-full items-start gap-2 rounded px-2 py-2 text-left text-xs text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+                  >
+                    <span
+                      className="mt-1 h-2 w-2 shrink-0 rounded-full"
+                      style={{ backgroundColor: getSubjectColor(qt.subject) }}
+                    />
+                    <span className="min-w-0">
+                      <span className="mr-1 font-medium text-slate-500 dark:text-slate-400">{qt.subject}:</span>
+                      <span className="break-words">{qt.topic}</span>
+                    </span>
+                  </button>
+                ))}
+                {filteredTemplates.length === 0 && (
+                  <p className="px-2 py-1 text-xs text-slate-500 dark:text-slate-400">Add subjects first to use templates</p>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Tasks List */}
-      <div className="divide-y divide-gray-800/50">
+      <div className="divide-y divide-slate-200 dark:divide-slate-800/70">
         {tasks.length === 0 ? (
-          <div className="px-6 py-16 text-center">
-            <div className="text-5xl mb-4">📝</div>
-            <p className="text-gray-400 text-base font-medium">No tasks scheduled</p>
-            <p className="text-gray-600 text-sm mt-1">Add your study plan for this day above</p>
-            {subjects.length === 0 && (
-              <p className="text-indigo-400 text-xs mt-3 bg-indigo-400/10 px-4 py-2 rounded-lg inline-block">
-                👈 First add a subject from the sidebar
-              </p>
-            )}
-            {subjects.length > 0 && (
-              <p className="text-gray-700 text-xs mt-3">💡 Tip: Type a topic above and press Enter</p>
-            )}
+          <div className="px-4 py-12 text-center sm:px-6">
+            <p className="text-base font-medium text-slate-600 dark:text-slate-300">No tasks scheduled</p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Add your study plan for this day above</p>
           </div>
         ) : (
-          tasks.map((task, index) => (
-            <div
-              key={task.id}
-              className={`px-6 py-3.5 flex items-center gap-3 group transition-all hover:bg-gray-800/30 ${
-                task.done ? 'bg-green-900/5' : ''
-              }`}
-            >
-              {/* Number */}
-              <span className="text-xs text-gray-600 w-5 text-right font-mono flex-shrink-0">
-                {index + 1}
-              </span>
-
-              {/* Checkbox */}
-              <button
-                onClick={() => toggleTask(date, task.id)}
-                className={`w-6 h-6 rounded-md flex items-center justify-center border-2 transition-all flex-shrink-0 ${
-                  task.done
-                    ? 'bg-green-500 border-green-500 text-white shadow-lg shadow-green-500/20'
-                    : 'border-gray-600 hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/10'
+          <AnimatePresence initial={false}>
+            {tasks.map((task, index) => (
+              <motion.div
+                key={task.id}
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -12 }}
+                className={`group px-3 py-3.5 sm:px-5 lg:px-6 ${
+                  task.done ? "bg-emerald-50/60 dark:bg-emerald-900/10" : "hover:bg-slate-50 dark:hover:bg-slate-800/20"
                 }`}
               >
-                {task.done && (
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </button>
+                <div className="grid grid-cols-[auto_auto_1fr] gap-x-2 gap-y-2 md:grid-cols-[auto_auto_auto_1fr_auto] md:items-center md:gap-3">
+                  <span className="w-5 text-right font-mono text-xs text-slate-500 dark:text-slate-400">{index + 1}</span>
 
-              {/* Subject badge */}
-              <span
-                className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md flex-shrink-0"
-                style={{
-                  backgroundColor: getSubjectColor(task.subject) + '20',
-                  color: getSubjectColor(task.subject),
-                  borderLeft: `3px solid ${getSubjectColor(task.subject)}`,
-                }}
-              >
-                {task.subject}
-              </span>
+                  <button
+                    onClick={() => toggleTask(date, task.id)}
+                    className={`flex h-6 w-6 items-center justify-center rounded-md border-2 transition ${
+                      task.done ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-400 hover:border-indigo-500 dark:border-slate-600"
+                    }`}
+                  >
+                    {task.done && (
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
 
-              {/* Topic */}
-              {editingTask === task.id ? (
-                <input
-                  value={editTopic}
-                  onChange={e => setEditTopic(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') saveEdit(task.id);
-                    if (e.key === 'Escape') setEditingTask(null);
-                  }}
-                  onBlur={() => saveEdit(task.id)}
-                  className="flex-1 bg-gray-800 text-white text-sm px-2 py-1 rounded border border-indigo-500 outline-none"
-                  autoFocus
-                />
-              ) : (
-                <span
-                  className={`flex-1 text-sm cursor-pointer ${
-                    task.done ? 'line-through text-gray-600' : 'text-gray-200'
-                  }`}
-                  onDoubleClick={() => startEdit(task)}
-                  title="Double-click to edit"
-                >
-                  {task.topic}
-                </span>
-              )}
+                  <span
+                    className="w-fit rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+                    style={{
+                      backgroundColor: `${getSubjectColor(task.subject)}20`,
+                      color: getSubjectColor(task.subject),
+                      borderLeft: `3px solid ${getSubjectColor(task.subject)}`,
+                    }}
+                  >
+                    {task.subject}
+                  </span>
 
-              {/* Status */}
-              {task.done && (
-                <span className="text-green-400 text-[10px] font-bold uppercase tracking-wider flex-shrink-0 bg-green-400/10 px-2 py-0.5 rounded">
-                  Done ✓
-                </span>
-              )}
+                  <div className="col-span-3 md:col-span-1 md:col-start-4">
+                    {editingTask === task.id ? (
+                      <input
+                        value={editTopic}
+                        onChange={(e) => setEditTopic(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") saveEdit(task.id);
+                          if (e.key === "Escape") setEditingTask(null);
+                        }}
+                        onBlur={() => saveEdit(task.id)}
+                        className="w-full rounded border border-indigo-500 bg-white px-2 py-1 text-sm text-slate-900 dark:bg-slate-800 dark:text-white"
+                        autoFocus
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onDoubleClick={() => startEdit(task)}
+                        title="Double-click to edit"
+                        className={`w-full text-left text-sm ${
+                          task.done ? "line-through text-slate-400" : "text-slate-700 dark:text-slate-200"
+                        }`}
+                      >
+                        <span className="break-words">{task.topic}</span>
+                      </button>
+                    )}
+                  </div>
 
-              {/* Actions */}
-              <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity flex-shrink-0">
-                <button
-                  onClick={() => setFocusTimerTask(task)}
-                  className="text-gray-500 hover:text-indigo-400 text-xs p-1.5 rounded hover:bg-gray-800 transition flex items-center gap-1"
-                  title="Start Focus Session"
-                >
-                  🎯
-                  {task.sessionsCompleted > 0 && (
-                    <span className="text-[10px] bg-indigo-500/20 text-indigo-400 px-1 rounded">
-                      {task.sessionsCompleted}
-                    </span>
-                  )}
-                </button>
-                <button
-                  onClick={() => startEdit(task)}
-                  className="text-gray-500 hover:text-indigo-400 text-xs p-1.5 rounded hover:bg-gray-800 transition"
-                  title="Edit"
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={() => removeTask(date, task.id)}
-                  className="text-gray-500 hover:text-red-400 text-xs p-1.5 rounded hover:bg-gray-800 transition"
-                  title="Delete"
-                >
-                  🗑️
-                </button>
-              </div>
-            </div>
-          ))
+                  <div className="col-span-3 flex flex-wrap items-center gap-1 md:col-span-1 md:col-start-5 md:flex-nowrap md:justify-end md:opacity-70 md:transition-opacity md:group-hover:opacity-100">
+                    {task.done && (
+                      <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-500">
+                        Done
+                      </span>
+                    )}
+
+                    <button
+                      onClick={() => setFocusTimerTask(task)}
+                      className="rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-600 transition hover:bg-slate-200 hover:text-indigo-600 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
+                    >
+                      Focus {task.sessionsCompleted > 0 ? `(${task.sessionsCompleted})` : ""}
+                    </button>
+                    <button
+                      onClick={() => startEdit(task)}
+                      className="rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-600 transition hover:bg-slate-200 hover:text-indigo-600 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => removeTask(date, task.id)}
+                      className="rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-600 transition hover:bg-slate-200 hover:text-rose-600 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         )}
       </div>
 
-      {/* Summary footer */}
       {tasks.length > 0 && (
-        <div className="px-6 py-3 bg-gray-950/50 border-t border-gray-800 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <span className="text-xs text-gray-500">
-              <span className="text-green-400 font-bold">{completedCount}</span> completed
+        <div className="flex flex-col gap-1 border-t border-slate-200 bg-slate-50/80 px-3 py-3 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-5 lg:px-6 dark:border-slate-800 dark:bg-slate-950/30">
+          <div className="flex items-center gap-4 text-slate-500 dark:text-slate-400">
+            <span>
+              <span className="font-bold text-emerald-500">{completedCount}</span> completed
             </span>
-            <span className="text-xs text-gray-500">
-              <span className="text-amber-400 font-bold">{totalCount - completedCount}</span> pending
+            <span>
+              <span className="font-bold text-amber-500">{totalCount - completedCount}</span> pending
             </span>
           </div>
-          {pct === 100 && (
-            <span className="text-xs text-green-400 font-bold flex items-center gap-1">
-              🎉 All done! Great work!
-            </span>
-          )}
+          {pct === 100 && <span className="font-semibold text-emerald-500">All done. Great work.</span>}
         </div>
       )}
 
-      {/* Focus Timer Modal */}
       {focusTimerTask && (
         <FocusTimer
           task={{ ...focusTimerTask, subjectColor: getSubjectColor(focusTimerTask.subject) }}
@@ -371,6 +398,6 @@ export default function DaySchedule({ date, tasks, subjects, addTask, toggleTask
           onClose={() => setFocusTimerTask(null)}
         />
       )}
-    </div>
+    </motion.section>
   );
 }

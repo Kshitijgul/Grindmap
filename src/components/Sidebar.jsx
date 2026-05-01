@@ -73,61 +73,70 @@ export default function Sidebar({
     <>
       {/* Mobile overlay */}
       <div
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 xl:hidden transition-opacity duration-300 ${
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
         onClick={onClose}
       />
 
-      {/* Sidebar — fixed, full height, independent scroll */}
+      {/* Sidebar */}
       <aside
         className={`
           fixed top-0 left-0 z-50
           h-screen w-72
           flex flex-col
-          bg-gray-950 border-r border-gray-800/80
-          transition-transform duration-300 ease-in-out
-          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          bg-white dark:bg-gray-950
+          border-r border-gray-200 dark:border-gray-800/80
+          transition-all duration-300 ease-in-out
+          ${isOpen ? 'translate-x-0' : '-translate-x-full xl:translate-x-0'}
         `}
-        style={{ boxShadow: '4px 0 24px rgba(0,0,0,0.4)' }}
+        style={{ boxShadow: isOpen ? '4px 0 24px rgba(0,0,0,0.3)' : 'none' }}
       >
-
         {/* ── Logo strip ── */}
-        <div className="flex-shrink-0 flex items-center justify-between px-5 py-4 border-b border-gray-800/80 bg-gray-950">
+        <div className="flex-shrink-0 flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800/80 bg-white dark:bg-gray-950 transition-colors duration-200">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-lime-400 flex items-center justify-center shadow-lg shadow-lime-400/30">
               <span className="text-gray-950 font-black text-xs">G</span>
             </div>
-            <span className="font-black tracking-tight text-white text-base">
+            <span className="font-black tracking-tight text-gray-900 dark:text-white text-base">
               GRIND<span className="text-lime-400">MAP</span>
             </span>
           </div>
           <button
             onClick={onClose}
-            className="lg:hidden w-7 h-7 rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:text-white hover:border-gray-600 flex items-center justify-center transition text-xs"
+            className="xl:hidden w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600 flex items-center justify-center transition text-xs"
           >
             ✕
           </button>
         </div>
 
         {/* ── Scrollable body ── */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-800">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
 
           {/* Calendar section */}
-          <div className="px-4 pt-4 pb-3 border-b border-gray-800/60">
+          <div className="px-4 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800/60 transition-colors duration-200">
 
             {/* Month nav */}
             <div className="flex items-center justify-between mb-3">
               <button
-                onClick={() => goToMonth(currentMonth === 0 ? 11 : currentMonth - 1, currentMonth === 0 ? currentYear - 1 : currentYear)}
-                className="w-7 h-7 rounded-lg bg-gray-800/80 hover:bg-gray-700 text-gray-400 hover:text-white flex items-center justify-center transition text-xs"
+                onClick={() => goToMonth(
+                  currentMonth === 0 ? 11 : currentMonth - 1,
+                  currentMonth === 0 ? currentYear - 1 : currentYear
+                )}
+                className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800/80 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center justify-center transition text-xs"
               >
                 ◀
               </button>
-              <span className="text-white font-bold text-sm tracking-wide">
-                {MONTH_NAMES[currentMonth]} <span className="text-gray-500 font-normal">{currentYear}</span>
+              <span className="text-gray-900 dark:text-white font-bold text-sm tracking-wide">
+                {MONTH_NAMES[currentMonth]}{' '}
+                <span className="text-gray-400 dark:text-gray-500 font-normal">{currentYear}</span>
               </span>
               <button
-                onClick={() => goToMonth(currentMonth === 11 ? 0 : currentMonth + 1, currentMonth === 11 ? currentYear + 1 : currentYear)}
-                className="w-7 h-7 rounded-lg bg-gray-800/80 hover:bg-gray-700 text-gray-400 hover:text-white flex items-center justify-center transition text-xs"
+                onClick={() => goToMonth(
+                  currentMonth === 11 ? 0 : currentMonth + 1,
+                  currentMonth === 11 ? currentYear + 1 : currentYear
+                )}
+                className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800/80 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center justify-center transition text-xs"
               >
                 ▶
               </button>
@@ -136,7 +145,9 @@ export default function Sidebar({
             {/* Day headers */}
             <div className="grid grid-cols-7 mb-1">
               {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d, i) => (
-                <div key={i} className="text-center text-[10px] font-semibold text-gray-600 uppercase py-1">{d}</div>
+                <div key={i} className="text-center text-[10px] font-semibold text-gray-400 dark:text-gray-600 uppercase py-1">
+                  {d}
+                </div>
               ))}
             </div>
 
@@ -159,8 +170,8 @@ export default function Sidebar({
                       ${isSelected
                         ? 'bg-lime-400 text-gray-950 font-bold shadow-md shadow-lime-400/30 scale-105'
                         : isToday
-                        ? 'bg-lime-400/10 text-lime-400 ring-1 ring-lime-400/50'
-                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+                        ? 'bg-lime-400/10 text-lime-500 dark:text-lime-400 ring-1 ring-lime-400/50'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'}
                     `}
                   >
                     {day}
@@ -172,7 +183,7 @@ export default function Sidebar({
             {/* Go to today */}
             <button
               onClick={() => onSelectDate(todayStr)}
-              className="mt-3 w-full py-1.5 text-xs font-semibold text-lime-400 hover:text-lime-300 hover:bg-lime-400/5 rounded-lg transition tracking-wide"
+              className="mt-3 w-full py-1.5 text-xs font-semibold text-lime-600 dark:text-lime-400 hover:text-lime-700 dark:hover:text-lime-300 hover:bg-lime-50 dark:hover:bg-lime-400/5 rounded-lg transition tracking-wide"
             >
               ↩ Go to Today
             </button>
@@ -181,10 +192,10 @@ export default function Sidebar({
           {/* Subjects section */}
           <div className="px-4 pt-4 pb-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+              <h3 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                 My Subjects
               </h3>
-              <span className="text-[10px] text-gray-600 bg-gray-800/60 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] text-gray-500 dark:text-gray-600 bg-gray-100 dark:bg-gray-800/60 px-2 py-0.5 rounded-full">
                 {subjects.length}
               </span>
             </div>
@@ -195,12 +206,11 @@ export default function Sidebar({
                 return (
                   <div
                     key={s.id}
-                    className="group relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 bg-gray-900/60 border border-gray-800/60 hover:border-gray-700 hover:bg-gray-800/60 transition-all duration-150"
+                    className="group relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-800/60 hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-all duration-150"
                   >
-                    {/* Color dot with glow */}
                     <div
-                      className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-2 ring-offset-1 ring-offset-gray-900"
-                      style={{ backgroundColor: s.color, ringColor: s.color + '40' }}
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: s.color }}
                     />
 
                     {editingId === s.id ? (
@@ -210,39 +220,39 @@ export default function Sidebar({
                         onChange={(e) => setEditName(e.target.value)}
                         onBlur={saveEdit}
                         onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
-                        className="flex-1 bg-gray-800 text-white text-sm px-2 py-0.5 rounded-lg outline-none border border-lime-400/50 text-xs"
+                        className="flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-xs px-2 py-0.5 rounded-lg outline-none border border-lime-400/50"
                         autoFocus
                       />
                     ) : (
-                      <span className="flex-1 text-gray-200 text-sm truncate leading-tight">{s.name}</span>
+                      <span className="flex-1 text-gray-700 dark:text-gray-200 text-sm truncate leading-tight">
+                        {s.name}
+                      </span>
                     )}
 
-                    {/* Goal pill */}
                     {hasGoal && (
-                      <span className="text-[8px] bg-lime-400/10 text-lime-400 px-1.5 py-0.5 rounded-full font-bold tracking-wide border border-lime-400/20 flex-shrink-0">
+                      <span className="text-[8px] bg-lime-400/10 text-lime-600 dark:text-lime-400 px-1.5 py-0.5 rounded-full font-bold tracking-wide border border-lime-400/20 flex-shrink-0">
                         GOAL
                       </span>
                     )}
 
-                    {/* Hover actions */}
                     <div className="opacity-0 group-hover:opacity-100 flex gap-0.5 transition-opacity flex-shrink-0">
                       <button
                         onClick={() => openGoalModal(s)}
-                        className="w-6 h-6 rounded-lg hover:bg-lime-400/10 text-gray-500 hover:text-lime-400 flex items-center justify-center transition text-xs"
+                        className="w-6 h-6 rounded-lg hover:bg-lime-100 dark:hover:bg-lime-400/10 text-gray-400 hover:text-lime-600 dark:hover:text-lime-400 flex items-center justify-center transition text-xs"
                         title="Set goal"
                       >
                         🎯
                       </button>
                       <button
                         onClick={() => startEdit(s)}
-                        className="w-6 h-6 rounded-lg hover:bg-gray-700 text-gray-500 hover:text-white flex items-center justify-center transition text-xs"
+                        className="w-6 h-6 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-700 dark:hover:text-white flex items-center justify-center transition text-xs"
                         title="Edit"
                       >
                         ✏️
                       </button>
                       <button
                         onClick={() => onDeleteSubject(s.id)}
-                        className="w-6 h-6 rounded-lg hover:bg-red-500/10 text-gray-500 hover:text-red-400 flex items-center justify-center transition text-xs"
+                        className="w-6 h-6 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-400 hover:text-red-500 dark:hover:text-red-400 flex items-center justify-center transition text-xs"
                         title="Delete"
                       >
                         🗑️
@@ -253,7 +263,7 @@ export default function Sidebar({
               })}
 
               {subjects.length === 0 && (
-                <div className="text-center py-6 text-gray-600 text-xs">
+                <div className="text-center py-6 text-gray-400 dark:text-gray-600 text-xs">
                   No subjects yet. Add one below ↓
                 </div>
               )}
@@ -267,12 +277,12 @@ export default function Sidebar({
                 onChange={(e) => setNewSubject(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
                 placeholder="Add subject..."
-                className="flex-1 bg-gray-900 text-white text-sm px-3 py-2 rounded-xl border border-gray-700/80 focus:border-lime-400/60 focus:outline-none placeholder-gray-600 transition"
+                className="flex-1 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700/80 focus:border-lime-400/60 focus:outline-none placeholder-gray-400 dark:placeholder-gray-600 transition"
               />
               <button
                 onClick={handleAdd}
                 disabled={!newSubject.trim()}
-                className="w-9 h-9 rounded-xl bg-lime-400 hover:bg-lime-300 disabled:bg-gray-800 disabled:text-gray-600 text-gray-950 font-black text-lg flex items-center justify-center transition shadow-md shadow-lime-400/20"
+                className="w-9 h-9 rounded-xl bg-lime-400 hover:bg-lime-300 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-400 dark:disabled:text-gray-600 text-gray-950 font-black text-lg flex items-center justify-center transition shadow-md shadow-lime-400/20"
               >
                 +
               </button>
@@ -281,8 +291,8 @@ export default function Sidebar({
         </div>
 
         {/* ── Bottom branding strip ── */}
-        <div className="flex-shrink-0 px-5 py-3 border-t border-gray-800/60 bg-gray-950">
-          <p className="text-[10px] text-gray-700 text-center tracking-widest uppercase font-medium">
+        <div className="flex-shrink-0 px-5 py-3 border-t border-gray-200 dark:border-gray-800/60 bg-white dark:bg-gray-950 transition-colors duration-200">
+          <p className="text-[10px] text-gray-400 dark:text-gray-700 text-center tracking-widest uppercase font-medium">
             Stay consistent. Stay ahead.
           </p>
         </div>
@@ -291,40 +301,48 @@ export default function Sidebar({
       {/* Goal Modal */}
       {goalModalSubject && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-          <div className="bg-gray-900 border border-gray-700/80 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700/80 rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: goalModalSubject.color }} />
-              <h3 className="text-base font-bold text-white">Set Goal — {goalModalSubject.name}</h3>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                Set Goal — {goalModalSubject.name}
+              </h3>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Goal</label>
+                <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-500 uppercase tracking-widest mb-1.5">
+                  Goal
+                </label>
                 <input
                   type="text"
                   value={goalForm.goal}
                   onChange={(e) => setGoalForm({ ...goalForm, goal: e.target.value })}
                   placeholder="e.g., Complete all chapters"
-                  className="w-full px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm placeholder-gray-500 focus:border-lime-400/60 focus:outline-none transition"
+                  className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:border-lime-400/60 focus:outline-none transition"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Start Date</label>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
+                    Start Date
+                  </label>
                   <input
                     type="date"
                     value={goalForm.startDate}
                     onChange={(e) => setGoalForm({ ...goalForm, startDate: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm focus:border-lime-400/60 focus:outline-none transition"
+                    className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white text-sm focus:border-lime-400/60 focus:outline-none transition"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">End Date</label>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
+                    End Date
+                  </label>
                   <input
                     type="date"
                     value={goalForm.endDate}
                     onChange={(e) => setGoalForm({ ...goalForm, endDate: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm focus:border-lime-400/60 focus:outline-none transition"
+                    className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white text-sm focus:border-lime-400/60 focus:outline-none transition"
                   />
                 </div>
               </div>
@@ -333,14 +351,14 @@ export default function Sidebar({
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setGoalModalSubject(null)}
-                className="flex-1 py-2.5 text-sm text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600 rounded-xl transition"
+                className="flex-1 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 rounded-xl transition"
               >
                 Cancel
               </button>
               <button
                 onClick={saveGoal}
                 disabled={!goalForm.goal || !goalForm.startDate || !goalForm.endDate}
-                className="flex-1 py-2.5 text-sm bg-lime-400 hover:bg-lime-300 disabled:bg-gray-800 disabled:text-gray-600 text-gray-950 font-bold rounded-xl transition shadow-md shadow-lime-400/20"
+                className="flex-1 py-2.5 text-sm bg-lime-400 hover:bg-lime-300 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-400 dark:disabled:text-gray-600 text-gray-950 font-bold rounded-xl transition shadow-md shadow-lime-400/20"
               >
                 Save Goal
               </button>

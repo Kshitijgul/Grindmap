@@ -99,7 +99,7 @@ export default function HomePage() {
 
           {/* Right - Auth Card */}
           <div className="flex justify-center lg:justify-end">
-            <AuthCard />
+            {/* <AuthCard /> */}
           </div>
         </div>
 

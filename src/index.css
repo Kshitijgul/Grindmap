@@ -1,17 +1,27 @@
 @import "tailwindcss";
 
+/* ← This enables dark: prefix in Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Base font */
 * {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  scroll-behavior: smooth;
 }
 
+/* REMOVE hard background + color from body ❌ */
+/* Let Tailwind control colors */
+
+/* Smooth rendering */
 body {
-  background-color: #030712;
-  color: #ffffff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Custom scrollbar */
+/* -------------------- */
+/* Scrollbar Styling */
+/* -------------------- */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -30,22 +40,55 @@ body {
   background: #4b5563;
 }
 
-/* Selection */
+/* Optional thin scrollbar utility */
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-track-transparent::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thumb-gray-800::-webkit-scrollbar-thumb {
+  background: #1f2937;
+  border-radius: 999px;
+}
+
+/* -------------------- */
+/* Text Selection */
+/* -------------------- */
 ::selection {
   background: #6366f1;
   color: white;
 }
 
-/* Smooth transitions */
-* {
-  scroll-behavior: smooth;
-}
-
-/* Focus styles */
-input:focus, select:focus, button:focus-visible {
+/* -------------------- */
+/* Focus Styles */
+/* -------------------- */
+input:focus,
+select:focus,
+button:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
 }
-.scrollbar-thin::-webkit-scrollbar { width: 4px; }
-.scrollbar-track-transparent::-webkit-scrollbar-track { background: transparent; }
-.scrollbar-thumb-gray-800::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 99px; }
+
+/* -------------------- */
+/* OPTIONAL: CSS Variables */
+/* (Use only if needed, not required for Tailwind) */
+/* -------------------- */
+
+/* Dark mode (default) */
+:root {
+  --bg-primary: #030712;
+  --bg-secondary: #111827;
+  --bg-card: #111827;
+  --border: #1f2937;
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+}
+
+/* Light mode */
+:root.light {
+  --bg-primary: #f9fafb;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --border: #e5e7eb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+}

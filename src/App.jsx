@@ -8,6 +8,8 @@ import Dashboard from './pages/Dashboard';
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
 
+
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">

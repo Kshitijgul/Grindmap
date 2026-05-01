@@ -1,102 +1,170 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+
 export default function MonthlyChart({ dailyData, selectedDate, setSelectedDate }) {
-  const maxTasks = Math.max(...dailyData.map(d => d.total), 1);
+  // 1. Math Setup
+  const maxTasks = Math.max(...dailyData.map(d => d.total), 5);
   const chartWidth = 800;
-  const chartHeight = 200;
-  const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+  const chartHeight = 250;
+  const padding = { top: 30, right: 20, bottom: 40, left: 40 };
+  
   const innerW = chartWidth - padding.left - padding.right;
   const innerH = chartHeight - padding.top - padding.bottom;
-
-  const barWidth = Math.min(innerW / dailyData.length - 2, 20);
+  
+  // Dynamic bar width logic - sharp rectangles look better slightly wider
+  const barWidth = Math.max(Math.min((innerW / dailyData.length) * 0.8, 24), 10);
+  const gap = (innerW / dailyData.length);
 
   return (
-    <div className="bg-gray-900 rounded-2xl border border-gray-800 p-5">
-      <h3 className="text-sm font-bold text-white mb-4">📊 Daily Task Completion</h3>
-      <div className="overflow-x-auto">
-        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full min-w-[600px]" preserveAspectRatio="xMidYMid meet">
-          {/* Grid lines */}
-          {[0, 0.25, 0.5, 0.75, 1].map(pct => {
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 shadow-xl shadow-gray-200/50 dark:shadow-none">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <span className="text-lg">📊</span> Daily Task Completion
+        </h3>
+        {selectedDate && (
+          <div className="text-[10px] px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 rounded-sm font-bold uppercase tracking-wider">
+            Selected: {selectedDate.split('-').slice(2).join('/')}
+          </div>
+        )}
+      </div>
+      
+      <div className="overflow-x-auto hide-scrollbar">
+        <svg 
+          viewBox={`0 0 ${chartWidth} ${chartHeight}`} 
+          className="w-full min-w-[700px] h-auto" 
+        >
+          {/* 2. Horizontal Grid Lines */}
+          {[0, 0.25, 0.5, 0.75, 1].map((pct, i) => {
             const y = padding.top + innerH * (1 - pct);
+            const value = Math.round(pct * maxTasks);
             return (
-              <g key={pct}>
-                <line x1={padding.left} y1={y} x2={chartWidth - padding.right} y2={y} stroke="#1f2937" strokeWidth={0.5} />
-                <text x={padding.left - 5} y={y + 3} textAnchor="end" fontSize={8} fill="#6b7280">
-                  {Math.round(pct * maxTasks)}
+              <g key={i} className="user-select-none">
+                <line 
+                  x1={padding.left} 
+                  y1={y} 
+                  x2={chartWidth - padding.right} 
+                  y2={y} 
+                  stroke="currentColor"
+                  className="text-gray-100 dark:text-gray-800"
+                  strokeWidth="1"
+                />
+                <text 
+                  x={padding.left - 12} 
+                  y={y + 4} 
+                  textAnchor="end" 
+                  className="fill-gray-400 dark:fill-gray-600 font-medium"
+                  fontSize="10"
+                >
+                  {value}
                 </text>
               </g>
             );
           })}
 
-          {/* Bars */}
+          {/* 3. Bars */}
           {dailyData.map((d, i) => {
-            const x = padding.left + (i * innerW) / dailyData.length + (innerW / dailyData.length - barWidth) / 2;
-            const totalH = (d.total / maxTasks) * innerH;
-            const completedH = (d.completed / maxTasks) * innerH;
             const isSelected = d.date === selectedDate;
+            const x = padding.left + (i * gap) + (gap - barWidth) / 2;
+            
+            // Heights
+            const totalBarHeight = (d.total / maxTasks) * innerH;
+            const completedBarHeight = (d.completed / maxTasks) * innerH;
+            
+            // Baseline Y coordinate
+            const baseY = padding.top + innerH;
 
             return (
-              <g key={d.date} className="cursor-pointer" onClick={() => setSelectedDate(d.date)}>
-                {/* Total bar (background) */}
+              <g 
+                key={d.date} 
+                className="cursor-pointer"
+                onClick={() => setSelectedDate(d.date)}
+              >
+                {/* Interaction Box (Wider than bar for easier touch) */}
+                <rect
+                  x={x - 2}
+                  y={padding.top}
+                  width={barWidth + 4}
+                  height={innerH}
+                  fill="transparent"
+                />
+
+                {/* Background Bar (Total) - Zero Radius */}
                 <rect
                   x={x}
-                  y={padding.top + innerH - totalH}
+                  y={baseY - totalBarHeight}
                   width={barWidth}
-                  height={totalH}
-                  rx={2}
-                  fill={isSelected ? '#312e81' : '#1e1b4b'}
-                  opacity={0.5}
+                  height={totalBarHeight}
+                  className={`${
+                    isSelected 
+                      ? 'fill-indigo-100 dark:fill-indigo-900/40' 
+                      : 'fill-gray-100 dark:fill-gray-800/40'
+                  } transition-colors duration-200`}
                 />
-                {/* Completed bar */}
-                <rect
+
+                {/* Progress Bar (Completed) - Zero Radius */}
+                <motion.rect
                   x={x}
-                  y={padding.top + innerH - completedH}
                   width={barWidth}
-                  height={completedH}
-                  rx={2}
-                  fill={d.percentage === 100 ? '#10b981' : isSelected ? '#818cf8' : '#6366f1'}
+                  initial={{ height: 0, y: baseY }}
+                  animate={{ 
+                    height: completedBarHeight, 
+                    y: baseY - completedBarHeight,
+                    fill: d.percentage === 100 
+                      ? '#10b981' 
+                      : isSelected ? '#6366f1' : '#a5b4fc' 
+                  }}
+                  transition={{ type: "spring", damping: 20, stiffness: 100 }}
                 />
-                {/* Day label */}
+
+                {/* Selection Highlight (Sharp Box) */}
+                {isSelected && (
+                  <motion.rect
+                    layoutId="activeSelection"
+                    x={x - 3}
+                    y={baseY - totalBarHeight - 3}
+                    width={barWidth + 6}
+                    height={totalBarHeight + 6}
+                    fill="none"
+                    stroke="#6366f1"
+                    strokeWidth="2"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  />
+                )}
+
+                {/* Date Label (Sharp styling) */}
                 <text
                   x={x + barWidth / 2}
-                  y={chartHeight - 8}
+                  y={chartHeight - 15}
                   textAnchor="middle"
-                  fontSize={7}
-                  fill={isSelected ? '#a5b4fc' : '#6b7280'}
-                  fontWeight={isSelected ? 'bold' : 'normal'}
+                  fontSize="10"
+                  className={`font-bold transition-colors duration-200 ${
+                    isSelected ? 'fill-indigo-600 dark:fill-indigo-400' : 'fill-gray-400'
+                  }`}
                 >
                   {d.day}
                 </text>
-                {/* Selection indicator */}
-                {isSelected && (
-                  <rect
-                    x={x - 2}
-                    y={padding.top + innerH + 2}
-                    width={barWidth + 4}
-                    height={2}
-                    rx={1}
-                    fill="#6366f1"
-                  />
-                )}
               </g>
             );
           })}
         </svg>
       </div>
 
-      {/* Legend */}
-      <div className="flex items-center gap-4 mt-3 justify-center">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-indigo-500/50" />
-          <span className="text-[10px] text-gray-500">Total Tasks</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-indigo-500" />
-          <span className="text-[10px] text-gray-500">Completed</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-green-500" />
-          <span className="text-[10px] text-gray-500">100% Done</span>
-        </div>
+      {/* 4. Sharp Legend Items */}
+      <div className="flex items-center justify-center gap-8 mt-6 pt-5 border-t border-gray-50 dark:border-gray-800">
+        <LegendItem color="bg-gray-200 dark:bg-gray-700" label="Total" />
+        <LegendItem color="bg-indigo-400" label="Completed" />
+        <LegendItem color="bg-green-500" label="100% Day" />
       </div>
+    </div>
+  );
+}
+
+function LegendItem({ color, label }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className={`w-3 h-3 ${color}`} /> {/* Square legend icon */}
+      <span className="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">{label}</span>
     </div>
   );
 }
