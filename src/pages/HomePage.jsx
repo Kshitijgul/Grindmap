@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 // import WebLogo from "../assets/Web_Logo.svg";
 // import { ReactComponent as Logo } from "../assets/Web_Logo.svg";
 // import Logo from "../assets/Web_Logo.svg";
-import Logo from '../components/NavLogo'; // Update path as needed
+import Logo from "../components/NavLogo"; // Update path as needed
 import GrindMapLogo from "../components/GrindMapLogo";
 
 export default function HomePage() {
@@ -19,8 +19,8 @@ export default function HomePage() {
               <img src={Logo} alt="GrindMap Logo" className="h-8 w-auto" />
             </Link> */}
             <Link to="/" className="flex items-center gap-2 no-underline">
-        <GrindMapLogo size="default" />
-      </Link>
+              <GrindMapLogo size="default" />
+            </Link>
 
             {/* Nav Buttons */}
             <div className="flex items-center gap-3">

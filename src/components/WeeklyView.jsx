@@ -1047,10 +1047,10 @@ export default function WeeklyView({
         </motion.div>
       </div>
 
-      <style jsx>{`
+      {/* <style jsx>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+      `}</style> */}
     </div>
   );
 }

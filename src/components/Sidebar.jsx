@@ -1,10 +1,9 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MONTH_NAMES } from '../utils/calender';
-import { Link } from 'react-router-dom';
-import NavLogo2 from '../components/NavLogo2';
-import NavLogo3 from '../components/NavLogo3';
-import GrindMapLogo from '../components/GrindMapLogo';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MONTH_NAMES } from "../utils/calender";
+import { Link } from "react-router-dom";
+import NavLogo3 from "../components/NavLogo3";
+import GrindMapLogo from "../components/GrindMapLogo";
 
 export default function Sidebar({
   subjects,
@@ -18,11 +17,15 @@ export default function Sidebar({
   isOpen,
   onClose,
 }) {
-  const [newSubject, setNewSubject] = useState('');
+  const [newSubject, setNewSubject] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const [editName, setEditName] = useState('');
+  const [editName, setEditName] = useState("");
   const [goalModalSubject, setGoalModalSubject] = useState(null);
-  const [goalForm, setGoalForm] = useState({ goal: '', startDate: '', endDate: '' });
+  const [goalForm, setGoalForm] = useState({
+    goal: "",
+    startDate: "",
+    endDate: "",
+  });
 
   const selected = new Date(selectedDate);
   const currentMonth = selected.getMonth();
@@ -30,14 +33,26 @@ export default function Sidebar({
 
   const handleAdd = () => {
     if (newSubject.trim()) {
-      const colors = ['#8B5CF6', '#22D3EE', '#F472B6', '#34D399', '#FBBF24', '#F87171', '#60A5FA', '#A78BFA'];
+      const colors = [
+        "#8B5CF6",
+        "#22D3EE",
+        "#F472B6",
+        "#34D399",
+        "#FBBF24",
+        "#F87171",
+        "#60A5FA",
+        "#A78BFA",
+      ];
       const color = colors[subjects.length % colors.length];
       onAddSubject(newSubject.trim(), color);
-      setNewSubject('');
+      setNewSubject("");
     }
   };
 
-  const startEdit = (s) => { setEditingId(s.id); setEditName(s.name); };
+  const startEdit = (s) => {
+    setEditingId(s.id);
+    setEditName(s.name);
+  };
   const saveEdit = () => {
     if (editingId && editName.trim()) {
       onUpdateSubject(editingId, { name: editName.trim() });
@@ -49,15 +64,25 @@ export default function Sidebar({
     const existing = subjectGoals[subject.id];
     setGoalModalSubject(subject);
     setGoalForm({
-      goal: existing?.goal || '',
-      startDate: existing?.start_date || '',
-      endDate: existing?.end_date || '',
+      goal: existing?.goal || "",
+      startDate: existing?.start_date || "",
+      endDate: existing?.end_date || "",
     });
   };
 
   const saveGoal = () => {
-    if (goalModalSubject && goalForm.goal && goalForm.startDate && goalForm.endDate) {
-      onSetGoal(goalModalSubject.id, goalForm.goal, goalForm.startDate, goalForm.endDate);
+    if (
+      goalModalSubject &&
+      goalForm.goal &&
+      goalForm.startDate &&
+      goalForm.endDate
+    ) {
+      onSetGoal(
+        goalModalSubject.id,
+        goalForm.goal,
+        goalForm.startDate,
+        goalForm.endDate,
+      );
       setGoalModalSubject(null);
     }
   };
@@ -69,10 +94,14 @@ export default function Sidebar({
   for (let d = 1; d <= daysInMonth; d++) calDays.push(d);
 
   const today = new Date();
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
-  const goToMonth = (month, year) => onSelectDate(`${year}-${String(month + 1).padStart(2, '0')}-01`);
-  const goToDay = (day) => onSelectDate(`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
+  const goToMonth = (month, year) =>
+    onSelectDate(`${year}-${String(month + 1).padStart(2, "0")}-01`);
+  const goToDay = (day) =>
+    onSelectDate(
+      `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+    );
 
   return (
     <>
@@ -98,32 +127,27 @@ export default function Sidebar({
          bg-gray-50 dark:bg-gray-950
           border-r border-gray-200 dark:border-gray-800/80
           transition-transform duration-300 ease-in-out
-          ${isOpen ? 'translate-x-0' : '-translate-x-full xl:translate-x-0'}
+          ${isOpen ? "translate-x-0" : "-translate-x-full xl:translate-x-0"}
         `}
-        style={{ boxShadow: isOpen ? '10px 0 30px rgba(0,0,0,0.2)' : 'none' }}
+        style={{ boxShadow: isOpen ? "10px 0 30px rgba(0,0,0,0.2)" : "none" }}
       >
+        {/* ── Logo strip ── */}
         {/* ── Logo strip ── */}
         <div className="flex-shrink-0 flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800/80 transition-colors duration-200">
           <div className="flex items-center">
-            <Link to="/" className="flex items-center gap-2 no-underline">
-            <GrindMapLogo size="default" />
-                {/* <NavLogo3 size={32} /> */}
-                {/* <NavLogo2 size="small" /> */}
-              {/* MOBILE: Icon Only */}
-              {/* <div className="block md:hidden">
+            <Link to="/" className="flex items-center no-underline">
+              {/* Mobile: Icon Only (NavLogo3) - Shows on screens < 640px */}
+              <div className="block sm:hidden">
                 <NavLogo3 size={32} />
-              </div> */}
-              {/* TABLET: Small Logo + Text */}
-              {/* <div className="hidden md:block xl:hidden">
-                <NavLogo2 size="small" />
-              </div> */}
-              {/* PC: Default Logo + Text */}
-              {/* <div className="hidden xl:block">
-                <NavLogo2 size="default" />
-              </div> */}
+              </div>
+
+              {/* Desktop: Icon + Text (GrindMapLogo) - Shows on screens >= 640px */}
+              <div className="hidden sm:block">
+                <GrindMapLogo size="default" />
+              </div>
             </Link>
           </div>
-          
+
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={onClose}
@@ -135,25 +159,35 @@ export default function Sidebar({
 
         {/* ── Scrollable body ── */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar">
-
           {/* Calendar section */}
           <div className="px-4 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800/60">
             <div className="flex items-center justify-between mb-4">
               <motion.button
                 whileHover={{ x: -2 }}
                 whileTap={{ scale: 0.8 }}
-                onClick={() => goToMonth(currentMonth === 0 ? 11 : currentMonth - 1, currentMonth === 0 ? currentYear - 1 : currentYear)}
+                onClick={() =>
+                  goToMonth(
+                    currentMonth === 0 ? 11 : currentMonth - 1,
+                    currentMonth === 0 ? currentYear - 1 : currentYear,
+                  )
+                }
                 className="w-7 h-7 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center justify-center transition"
               >
                 ◀
               </motion.button>
               <span className="text-gray-900 dark:text-white font-bold text-sm tracking-tight">
-                {MONTH_NAMES[currentMonth]} <span className="opacity-40 font-medium">{currentYear}</span>
+                {MONTH_NAMES[currentMonth]}{" "}
+                <span className="opacity-40 font-medium">{currentYear}</span>
               </span>
               <motion.button
                 whileHover={{ x: 2 }}
                 whileTap={{ scale: 0.8 }}
-                onClick={() => goToMonth(currentMonth === 11 ? 0 : currentMonth + 1, currentMonth === 11 ? currentYear + 1 : currentYear)}
+                onClick={() =>
+                  goToMonth(
+                    currentMonth === 11 ? 0 : currentMonth + 1,
+                    currentMonth === 11 ? currentYear + 1 : currentYear,
+                  )
+                }
                 className="w-7 h-7 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center justify-center transition"
               >
                 ▶
@@ -161,8 +195,11 @@ export default function Sidebar({
             </div>
 
             <div className="grid grid-cols-7 mb-2">
-              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                <div key={i} className="text-center text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase">
+              {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+                <div
+                  key={i}
+                  className="text-center text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase"
+                >
                   {d}
                 </div>
               ))}
@@ -170,7 +207,9 @@ export default function Sidebar({
 
             <div className="grid grid-cols-7 gap-1">
               {calDays.map((day, i) => {
-                const dateStr = day ? `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
+                const dateStr = day
+                  ? `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+                  : "";
                 const isSelected = dateStr === selectedDate;
                 const isToday = dateStr === todayStr;
                 return (
@@ -182,12 +221,14 @@ export default function Sidebar({
                     onClick={() => goToDay(day)}
                     className={`
                       relative w-8 h-8 rounded-lg text-xs font-semibold transition-all
-                      ${!day ? 'invisible' : ''}
-                      ${isSelected
-                        ? 'bg-lime-400 text-gray-950 shadow-lg shadow-lime-400/20'
-                        : isToday
-                        ? 'bg-lime-400/10 text-lime-500 ring-1 ring-lime-400/30'
-                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'}
+                      ${!day ? "invisible" : ""}
+                      ${
+                        isSelected
+                          ? "bg-lime-400 text-gray-950 shadow-lg shadow-lime-400/20"
+                          : isToday
+                            ? "bg-lime-400/10 text-lime-500 ring-1 ring-lime-400/30"
+                            : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                      }
                     `}
                   >
                     {day}
@@ -217,7 +258,7 @@ export default function Sidebar({
             </div>
 
             <div className="space-y-2">
-              <AnimatePresence mode='popLayout'>
+              <AnimatePresence mode="popLayout">
                 {subjects.map((s) => (
                   <motion.div
                     key={s.id}
@@ -227,15 +268,18 @@ export default function Sidebar({
                     exit={{ opacity: 0, scale: 0.9 }}
                     className="group flex items-center gap-3 rounded-2xl px-3 py-3 bg-gray-50 dark:bg-gray-900/40 border border-transparent dark:border-gray-800/50 hover:border-gray-200 dark:hover:border-gray-700 transition-all"
                   >
-                    <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: s.color }} />
-                    
+                    <div
+                      className="w-2.5 h-2.5 rounded-full shadow-sm"
+                      style={{ backgroundColor: s.color }}
+                    />
+
                     {editingId === s.id ? (
                       <input
                         autoFocus
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
                         onBlur={saveEdit}
-                        onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
+                        onKeyDown={(e) => e.key === "Enter" && saveEdit()}
                         className="flex-1 bg-white dark:bg-gray-800 text-xs px-2 py-1 rounded-md outline-none ring-1 ring-lime-400"
                       />
                     ) : (
@@ -245,13 +289,30 @@ export default function Sidebar({
                     )}
 
                     {subjectGoals[s.id] && (
-                      <span className="text-[8px] font-black bg-lime-400 text-gray-950 px-1.5 py-0.5 rounded-md">GOAL</span>
+                      <span className="text-[8px] font-black bg-lime-400 text-gray-950 px-1.5 py-0.5 rounded-md">
+                        GOAL
+                      </span>
                     )}
 
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => openGoalModal(s)} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition text-xs">🎯</button>
-                      <button onClick={() => startEdit(s)} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition text-xs">✏️</button>
-                      <button onClick={() => onDeleteSubject(s.id)} className="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 rounded-md transition text-xs">🗑️</button>
+                      <button
+                        onClick={() => openGoalModal(s)}
+                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition text-xs"
+                      >
+                        🎯
+                      </button>
+                      <button
+                        onClick={() => startEdit(s)}
+                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition text-xs"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => onDeleteSubject(s.id)}
+                        className="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 rounded-md transition text-xs"
+                      >
+                        🗑️
+                      </button>
                     </div>
                   </motion.div>
                 ))}
@@ -263,7 +324,7 @@ export default function Sidebar({
               <input
                 value={newSubject}
                 onChange={(e) => setNewSubject(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
                 placeholder="New subject..."
                 className="flex-1 bg-gray-50 dark:bg-gray-900 text-sm px-4 py-2.5 rounded-2xl border-none focus:ring-2 focus:ring-lime-400/50 transition dark:text-white"
               />
@@ -291,59 +352,101 @@ export default function Sidebar({
       <AnimatePresence>
         {goalModalSubject && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/80 backdrop-blur-md" 
-              onClick={() => setGoalModalSubject(null)} 
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+              onClick={() => setGoalModalSubject(null)}
             />
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               className="relative w-full max-w-sm bg-white dark:bg-[#151821] rounded-[2rem] p-8 shadow-2xl border border-gray-100 dark:border-gray-800"
             >
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: goalModalSubject.color }} />
-                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Set Goal</h3>
+                <div
+                  className="w-4 h-4 rounded-full"
+                  style={{ backgroundColor: goalModalSubject.color }}
+                />
+                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                  Set Goal
+                </h3>
               </div>
-              
+
               <div className="space-y-5">
                 <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Subject Goal</label>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                    Subject Goal
+                  </label>
                   <input
                     className="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-2xl px-5 py-3.5 text-sm dark:text-white"
                     placeholder="e.g. Complete 50 lectures"
                     value={goalForm.goal}
-                    onChange={(e) => setGoalForm({ ...goalForm, goal: e.target.value })}
+                    onChange={(e) =>
+                      setGoalForm({ ...goalForm, goal: e.target.value })
+                    }
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Start</label>
-                    <input type="date" className="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-2xl px-4 py-3 text-sm dark:text-white"
-                      value={goalForm.startDate} onChange={(e) => setGoalForm({ ...goalForm, startDate: e.target.value })} />
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                      Start
+                    </label>
+                    <input
+                      type="date"
+                      className="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-2xl px-4 py-3 text-sm dark:text-white"
+                      value={goalForm.startDate}
+                      onChange={(e) =>
+                        setGoalForm({ ...goalForm, startDate: e.target.value })
+                      }
+                    />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">End</label>
-                    <input type="date" className="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-2xl px-4 py-3 text-sm dark:text-white"
-                      value={goalForm.endDate} onChange={(e) => setGoalForm({ ...goalForm, endDate: e.target.value })} />
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                      End
+                    </label>
+                    <input
+                      type="date"
+                      className="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-2xl px-4 py-3 text-sm dark:text-white"
+                      value={goalForm.endDate}
+                      onChange={(e) =>
+                        setGoalForm({ ...goalForm, endDate: e.target.value })
+                      }
+                    />
                   </div>
                 </div>
               </div>
 
               <div className="flex gap-3 mt-8">
-                <button onClick={() => setGoalModalSubject(null)} className="flex-1 py-4 text-sm font-bold text-gray-400 hover:text-gray-900 dark:hover:text-white transition">Cancel</button>
-                <button onClick={saveGoal} className="flex-1 py-4 bg-lime-400 text-gray-950 font-black rounded-2xl shadow-xl shadow-lime-400/20 text-sm">Save Goal</button>
+                <button
+                  onClick={() => setGoalModalSubject(null)}
+                  className="flex-1 py-4 text-sm font-bold text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveGoal}
+                  className="flex-1 py-4 bg-lime-400 text-gray-950 font-black rounded-2xl shadow-xl shadow-lime-400/20 text-sm"
+                >
+                  Save Goal
+                </button>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+      {/* <style jsx>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style> */}
     </>
   );
 }
